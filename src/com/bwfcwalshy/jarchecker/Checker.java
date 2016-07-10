@@ -78,7 +78,8 @@ public class Checker {
 		ENDLESS_LOOP("for(;;;)", WarningType.MALICIOUS),
 		SET_OP("setOp(true)", WarningType.WARNING),
 		EQUALS_NAME(Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase)\\(\\\"[a-zA-Z0-9]+\\\"\\)"), WarningType.WARNING),
-		STAR_PERM("addPermission(\"*\"", WarningType.WARNING);
+		STAR_PERM("addPermission(\"*\"", WarningType.WARNING),
+		URL(Pattern.compile("[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"), WarningType.WARNING);
 		
 		private String s;
 		private Pattern p;
