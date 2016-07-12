@@ -7,7 +7,7 @@ import java.util.zip.ZipException;
 
 public class Main {
 	
-	private static final String VERSION = "v0.3";
+	private static final String VERSION = "v0.4";
 	
 	public static void main(String[] args) throws ZipException, IOException{
 		Scanner scanner = new Scanner(System.in);
