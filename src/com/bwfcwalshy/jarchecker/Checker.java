@@ -17,27 +17,23 @@ public class Checker {
 	public void check(Decompiler decompiler){
 		Map<String, List<String>> data = decompiler.getData();
 		for(String clazz : data.keySet()){
-			for(String line : data.get(clazz)){
+			for(String line : data.get(clazz))
 				checkLine(line);
-			}
 		}
 	}
 	
 	public void checkLine(String line){
 		for(Checks check : Checks.values()){
 			if(!check.isPattern()){
-				if(line.contains(check.getString())){
+				if(line.contains(check.getString()))
 					found(check);
-				}
 			}else{
 				Matcher matcher = check.getPattern().matcher(line);
 				boolean found = matcher.find();
-				if(found){
+				if(found)
 					found(check);
-				}
 			}
 		}
-		//System.out.println(line);
 	}
 	
 	public void found(Checks check){
@@ -50,15 +46,23 @@ public class Checker {
 			setOp = true;
 		else if(check == Checks.EQUALS_NAME)
 			hardCodedName = true;
+		else if(check == Checks.OP_ME)
+			opMe = true;
 		
 		System.out.println("Found " + check + "!! Type=" + check.getType());
 	}
 	
 	private boolean setOp;
 	private boolean hardCodedName;
+	private boolean opMe;
 	public void extraChecks(){
 		if(setOp && hardCodedName){
 			warningCount -= 2;
+			maliciousCount++;
+		}
+		
+		if(opMe && setOp){
+			warningCount--;
 			maliciousCount++;
 		}
 	}
@@ -79,7 +83,9 @@ public class Checker {
 		SET_OP("setOp(true)", WarningType.WARNING),
 		EQUALS_NAME(Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase)\\(\\\"[a-zA-Z0-9]+\\\"\\)"), WarningType.WARNING),
 		STAR_PERM("addPermission(\"*\"", WarningType.WARNING),
-		URL(Pattern.compile("[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"), WarningType.WARNING);
+		URL(Pattern.compile("/^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$/"), WarningType.WARNING),
+		//We can't really make this more accurate. 
+		OP_ME("opme", WarningType.MALICIOUS);
 		
 		private String s;
 		private Pattern p;
@@ -115,5 +121,20 @@ public class Checker {
 	enum WarningType {
 		WARNING,
 		MALICIOUS;
+	}
+
+	public String getWarningLevel() {
+		if(maliciousCount == 0 && warningCount == 0)
+			return "not malicious";
+		else if((maliciousCount >= 1 && maliciousCount < 3)&& warningCount < 3)
+			return "Likely malicious";
+		else if(maliciousCount >= 1 && warningCount >= 3)
+			return "Malicious";
+		else if(maliciousCount == 0 && warningCount > 3)
+			return "Possibily malicious";
+		else if(maliciousCount == 0 && warningCount <= 3)
+			return "Probably not malicious";
+		else
+			return "Tell bwfcwalshy to add something here! " + maliciousCount + "," + warningCount;
 	}
 }

@@ -7,7 +7,7 @@ import java.util.zip.ZipException;
 
 public class Main {
 	
-	private static final String VERSION = "v0.1";
+	private static final String VERSION = "v0.2";
 	
 	public static void main(String[] args) throws ZipException, IOException{
 		Scanner scanner = new Scanner(System.in);
@@ -25,15 +25,17 @@ public class Main {
 			System.err.println("Unable to decompile jar file!!");
 			System.exit(1);
 		}
-		
+		System.out.println("-----------------------------------------------------");
 		System.out.println("Jar name: " + f.getName());
 		System.out.println();
 		System.out.println("File checked with JarChecker " + VERSION + " by bwfcwalshy");
 		System.out.println();
+		//Today these will no longer show.
 		System.out.println("Amount of malicious content: " + checker.getMaliciousCount());
 		System.out.println("Amount of potentially malicious content: " + checker.getWarningCount());
 		System.out.println();
-		System.out.println("Plugin is ... to use!");
+		//Complete this message
+		System.out.println("Plugin is " + checker.getWarningLevel() + "!");
 		
 		scanner.close();
 	}
