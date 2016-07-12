@@ -11,6 +11,10 @@ public class Logger {
 		System.out.println(getTime() + " [INFO] " + msg);
 	}
 	
+	public static void printNoInfo(String msg) {
+		System.out.println(msg);
+	}
+	
 	public static void debug(String msg){
 		System.out.println(getTime() + " [DEBUG] "+ msg);
 	}

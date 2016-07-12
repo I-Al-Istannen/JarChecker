@@ -7,7 +7,7 @@ import java.util.zip.ZipException;
 
 public class Main {
 	
-	private static final String VERSION = "v0.4";
+	private static final String VERSION = "v0.5";
 	
 	public static void main(String[] args) throws ZipException, IOException{
 		Scanner scanner = new Scanner(System.in);
@@ -28,12 +28,12 @@ public class Main {
 			System.exit(1);
 		}
 		Logger.print("-----------------------------------------------------");
-		Logger.print("Jar name: " + f.getName());
+		Logger.printNoInfo("Jar name: " + f.getName());
 		Logger.emptyLine();
-		Logger.print("File checked with JarChecker " + VERSION + " by bwfcwalshy");
+		Logger.printNoInfo("File checked with JarChecker " + VERSION + " by bwfcwalshy");
 		Logger.emptyLine();
-		Logger.print("Found: \n" + (checker.getFound().isEmpty() ? "Nothing!" : checker.getFound()));
-		Logger.print("Plugin is " + checker.getWarningLevel() + "!");
+		Logger.printNoInfo("Found: " + (checker.getFound().isEmpty() ? "Nothing!" : "\n" + checker.getFound()));
+		Logger.printNoInfo("Plugin is " + checker.getWarningLevel() + "!");
 		
 		scanner.close();
 	}

@@ -34,9 +34,10 @@ public class Checker {
 			while((entry = input.getNextEntry()) != null){
 				if(entry.getName().endsWith(".java")){
 					BufferedReader br = new BufferedReader(new InputStreamReader(zip.getInputStream(entry)));
+					int ln = 0;
 					String line;
 					while((line = br.readLine()) != null){
-						checkLine(line);
+						checkLine(line, ++ln);
 					}	
 				}
 			}
@@ -55,22 +56,21 @@ public class Checker {
 		}
 	}
 	
-	public void checkLine(String line){
+	public void checkLine(String line, int ln){
 		for(Checks check : Checks.values()){
 			if(!check.isPattern()){
 				if(line.contains(check.getString()))
-					found(check);
+					found(check, ln, line);
 			}else{
 				Matcher matcher = check.getPattern().matcher(line);
 				boolean found = matcher.find();
 				if(found)
-					found(check);
+					found(check, ln, line);
 			}
 		}
-		Logger.print(line);
 	}
 	
-	public void found(Checks check){
+	public void found(Checks check, int ln, String line){
 		if(check.getType() == WarningType.MALICIOUS)
 			maliciousCount++;
 		else
@@ -84,7 +84,8 @@ public class Checker {
 			opMe = true;
 		
 		foundChecks.add(check);
-		Logger.print("Found " + check + "!! Type=" + check.getType());
+		Logger.print("Found " + check.toString() + " on line " + ln + "!! Type=" + check.getType());
+		Logger.print("Line " + ln + ": " + line.replace("\t", ""));
 	}
 	
 	private boolean setOp;
@@ -120,15 +121,16 @@ public class Checker {
 	
 	enum Checks {
 		THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS),
-		WHILE_TRUE("while(true)", WarningType.MALICIOUS),
-		RUNTIME("Runtime.getRuntime().", WarningType.MALICIOUS),
-		ENDLESS_LOOP("for(;;;)", WarningType.MALICIOUS),
-		SET_OP("setOp(true)", WarningType.WARNING),
+		WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS),
+		RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS),
+		ENDLESS_LOOP(Pattern.compile("for\\((\\s*)?;(\\s*)?;(\\s*)?;(\\s*)?\\)"), WarningType.MALICIOUS),
+		SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"), WarningType.WARNING),
 		EQUALS_NAME(Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase)\\(\\\"[a-zA-Z0-9]+\\\"\\)"), WarningType.WARNING),
 		STAR_PERM("addPermission(\"*\"", WarningType.WARNING),
 		URL(Pattern.compile("^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$"), WarningType.WARNING),
 		//We can't really make this more accurate.
-		OP_ME("opme", WarningType.MALICIOUS);
+		OP_ME("opme", WarningType.MALICIOUS),
+		EXIT(".exit(", WarningType.MALICIOUS);
 		
 		private String s;
 		private Pattern p;
@@ -142,6 +144,11 @@ public class Checker {
 		private Checks(Pattern p, WarningType type){
 			this.p = p;
 			this.type = type;
+		}
+		
+		@Override
+		public String toString(){
+			return super.toString().charAt(0) + super.toString().substring(1).replace("_", "").toLowerCase();
 		}
 		
 		public boolean isPattern(){
