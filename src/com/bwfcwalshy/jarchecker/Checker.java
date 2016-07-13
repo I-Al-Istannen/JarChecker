@@ -36,6 +36,7 @@ public class Checker {
 	    input = new ZipInputStream(new FileInputStream(jar));
 	    ZipEntry entry;
 	    while((entry = input.getNextEntry()) != null){
+		String className = entry.getName().replaceFirst("\\.java", "").replace('/', '.');
 		boolean suspicious = false;
 		String clazz = "";
 		if(entry.getName().endsWith(".java")){
@@ -46,7 +47,7 @@ public class Checker {
 		    String line;
 		    while((line = br.readLine()) != null){
 			clazz += line;
-			List<Checks> result = checkLine(line, ++ln);
+			List<Checks> result = checkLine(line, ++ln, className);
 			if(result.size() > 0){
 			    suspicious = true;
 			    clazz += " // Here found: ";
@@ -54,7 +55,7 @@ public class Checker {
 				clazz += c.toString() + " ";
 			    }
 			}
-			
+
 			clazz += "\n";
 		    }
 		    zin.close();
@@ -62,7 +63,7 @@ public class Checker {
 		    br.close();
 		}
 		if(suspicious) {
-		    foundClasses.put(entry.getName().replace(File.separatorChar, '.'), clazz);
+		    foundClasses.put(className, clazz);
 		}
 	    }
 	}catch(IOException e){
@@ -80,19 +81,19 @@ public class Checker {
 	}
     }
 
-    public List<Checks> checkLine(String line, int ln){
+    public List<Checks> checkLine(String line, int ln, String className){
 	List<Checks> founds = new ArrayList<>();
 	for(Checks check : Checks.values()){
 	    if(!check.isPattern()){
 		if(line.contains(check.getString())) {
-		    found(check, ln, line);
+		    found(check, ln, line, className);
 		    founds.add(check);
 		}
 	    }else{
 		Matcher matcher = check.getPattern().matcher(line);
 		boolean found = matcher.find();
 		if(found) {
-		    found(check, ln, line);
+		    found(check, ln, line, className);
 		    founds.add(check);
 		}
 	    }
@@ -101,7 +102,7 @@ public class Checker {
 	return founds;
     }
 
-    public void found(Checks check, int ln, String line){
+    public void found(Checks check, int ln, String line, String path){
 	if(check.getType() == WarningType.MALICIOUS)
 	    maliciousCount++;
 	else
@@ -115,7 +116,7 @@ public class Checker {
 	    opMe = true;
 
 	foundChecks.add(check);
-	Logger.print("Found " + check.toString() + " on line " + ln + "!! Type=" + check.getType());
+	Logger.print("Found " + check.toString() + " on line " + ln + " in type " + path + "!! Type=" + check.getType());
 	Logger.print("Line " + ln + ": " + line.replace("\t", ""));
     }
 
@@ -153,7 +154,7 @@ public class Checker {
     public Map<String, String> getSuspiciusClasses(){
 	return foundClasses;
     }
-    
+
     enum Checks {
 	THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS),
 	WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS),
