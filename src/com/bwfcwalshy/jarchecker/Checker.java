@@ -127,7 +127,8 @@ public class Checker {
 		SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"), WarningType.WARNING),
 		EQUALS_NAME(Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase)\\(\\\"[a-zA-Z0-9]+\\\"\\)"), WarningType.WARNING),
 		STAR_PERM("addPermission(\"*\"", WarningType.WARNING),
-		URL(Pattern.compile("^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$"), WarningType.WARNING),
+		URL(Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"), WarningType.WARNING),
+		IP_ADDRESS(Pattern.compile("\\d{1,3}.+\\:?\\d{1,5}$"), WarningType.WARNING),
 		//We can't really make this more accurate.
 		OP_ME("opme", WarningType.MALICIOUS),
 		EXIT(".exit(", WarningType.MALICIOUS);

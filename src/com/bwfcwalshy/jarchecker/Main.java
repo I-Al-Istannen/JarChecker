@@ -34,6 +34,9 @@ public class Main {
 		Logger.emptyLine();
 		Logger.printNoInfo("Found: " + (checker.getFound().isEmpty() ? "Nothing!" : "\n" + checker.getFound()));
 		Logger.printNoInfo("Plugin is " + checker.getWarningLevel() + "!");
+		Logger.emptyLine();
+		Logger.printNoInfo("JarChecker is not always 100% accurate there is still always a risk.");
+		Logger.printNoInfo("If you would like someone to check the jar or you have any questions about JarChecker join the IRC channel #jarchecker on EsperNet.");
 		
 		scanner.close();
 	}
