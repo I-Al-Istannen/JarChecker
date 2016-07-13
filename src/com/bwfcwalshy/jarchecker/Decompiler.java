@@ -9,7 +9,7 @@ public class Decompiler {
 		if(!export.exists())
 			export.mkdir();
 		
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "java -jar C:\\temp\\Tests\\fernflower.jar " + f.getAbsolutePath() + " " + export.getAbsolutePath());
+		ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "java -jar fernflower.jar " + f.getAbsolutePath() + " " + export.getAbsolutePath());
 		try {
 			Process p = builder.start();
 			p.waitFor();
