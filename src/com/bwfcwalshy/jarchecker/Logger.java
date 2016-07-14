@@ -33,16 +33,6 @@ public class Logger {
 		System.err.println(x);
 	}
 	
-	public static void emptyLine() {
-		System.out.println();
-		if(!Main.nogui) Main.mw.log.append("\n");
-	}
-	
-	public static String getTime(){
-		Date date = new Date(System.currentTimeMillis());
-		return "[" + sdf.format(date) + "]";
-	}
-
 	public static void error(Exception e) {
 	    StringWriter sw = new StringWriter();
 	    PrintWriter pw = new PrintWriter(sw);
@@ -55,4 +45,15 @@ public class Logger {
 		e1.printStackTrace();
 	    }
 	}
+
+	public static void emptyLine() {
+		System.out.println();
+		if(!Main.nogui) Main.mw.log.append("\n");
+	}
+	
+	public static String getTime(){
+		Date date = new Date(System.currentTimeMillis());
+		return "[" + sdf.format(date) + "]";
+	}
+
 }

@@ -15,7 +15,6 @@ public class Main {
     public static boolean nogui = false;
 
     public static void main(String[] args) throws ZipException, IOException {
-	System.setErr(System.out); // Redirect the error stream
 	if(args.length == 1) {
 	    nogui = true;
 	    String path;
