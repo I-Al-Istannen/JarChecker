@@ -180,15 +180,13 @@ public class Checker {
 	StringBuilder sb = new StringBuilder();
 	Map<Checks, Integer> count = new HashMap<>();
 	for(Checks check : foundChecks){
-	    count.put(check, count.containsKey(check) ? count.get(check) : 0);
+	    count.put(check, count.containsKey(check) ? count.get(check)+1 : 0);
 	}
 	int rc = 0;
 	for(Entry<Checks, Integer> e : count.entrySet()) {
 	    rc++;
 	    sb.append(formatName(e.getKey()));
-	    if(e.getValue() > 0) {
-		sb.append(" x"+e.getValue());
-	    }
+	    sb.append(" x"+e.getValue());
 	    if(rc < count.size()) sb.append("\n");
 	}
 	return sb.toString();
@@ -268,7 +266,7 @@ public class Checker {
 	    return "possibily malicious";
 	else if(maliciousCount == 0 && warningCount <= 3)
 	    return "probably not malicious";
-	else
+	else 
 	    return "Tell bwfcwalshy to add something here! " + maliciousCount + "," + warningCount;
     }
 
