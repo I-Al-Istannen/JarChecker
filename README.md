@@ -22,4 +22,4 @@ So, for example:
 
 or
 
-``java -jar JarChecker.jar "C:\Users\You\Desktop\My JARs\MyJar.jar"``
+``"java -jar JarChecker.jar "C:\Users\You\Desktop\My JARs\MyJar.jar"``
