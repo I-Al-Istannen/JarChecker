@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -39,13 +40,16 @@ public class Checker {
 	    	String clazz = "";
 	    	int ln = 0;
 		for(String s : Files.readAllLines(jar.toPath())) {
-		    List<Checks> result = checkLine(s, ++ln, className);
+		    Map<Checks, Integer> result = checkLine(s, ++ln, className);
 		    clazz += "\n";
 		    if(result.size() > 0){
 			suspicious = true;
 			clazz += " // Here found: ";
-			for(Checks c : result) {
-			    clazz += c.toString() + " ";
+			int rc = 0;
+			for(Entry<Checks, Integer> c : result.entrySet()) {
+			    rc++;
+			    clazz += formatName(c.getKey());
+			    if(rc < result.size()) clazz += ", ";
 			}
 		    }
 		    clazz += "\n";
@@ -73,12 +77,15 @@ public class Checker {
 			String line;
 			while((line = br.readLine()) != null){
 			    clazz += line;
-			    List<Checks> result = checkLine(line, ++ln, className);
+			    Map<Checks, Integer> result = checkLine(line, ++ln, className);
 			    if(result.size() > 0){
 				suspicious = true;
 				clazz += " // Here found: ";
-				for(Checks c : result) {
-				    clazz += c.toString() + " ";
+				int lc = 0;
+				for(Entry<Checks, Integer> c : result.entrySet()) {
+				    lc++;
+				    clazz += formatName(c.getKey());
+				    if(lc < result.size()) clazz += ", ";
 				}
 			    }
 
@@ -107,20 +114,20 @@ public class Checker {
 	    }
     }
 
-    public List<Checks> checkLine(String line, int ln, String className){
-	List<Checks> founds = new ArrayList<>();
+    public Map<Checks, Integer> checkLine(String line, int ln, String className){
+	Map<Checks, Integer> founds = new HashMap<>();
 	for(Checks check : Checks.values()){
 	    if(!check.isPattern()){
 		if(line.contains(check.getString())) {
 		    found(check, ln, line, className);
-		    founds.add(check);
+		    founds.put(check, founds.containsKey(check) ? founds.get(check) + 1 : 0);
 		}
 	    }else{
 		Matcher matcher = check.getPattern().matcher(line);
 		boolean found = matcher.find();
 		if(found) {
 		    found(check, ln, line, className);
-		    founds.add(check);
+		    founds.put(check, founds.containsKey(check) ? founds.get(check) + 1 : 0);
 		}
 	    }
 	}
@@ -168,13 +175,27 @@ public class Checker {
     public int getWarningCount() {
 	return warningCount;
     }
-
+    
     public String getFound() {
 	StringBuilder sb = new StringBuilder();
+	Map<Checks, Integer> count = new HashMap<>();
 	for(Checks check : foundChecks){
-	    sb.append(check.toString().charAt(0) + check.toString().replace("_", " ").substring(1).toLowerCase() + "\n");
+	    count.put(check, count.containsKey(check) ? count.get(check) : 0);
+	}
+	int rc = 0;
+	for(Entry<Checks, Integer> e : count.entrySet()) {
+	    rc++;
+	    sb.append(formatName(e.getKey()));
+	    if(e.getValue() > 0) {
+		sb.append(" x"+e.getValue());
+	    }
+	    if(rc < count.size()) sb.append("\n");
 	}
 	return sb.toString();
+    }
+
+    private String formatName(Checks e) {
+	return e.toString().charAt(0) + e.toString().replace("_", " ").substring(1).toLowerCase();
     }
 
     public Map<String, String> getSuspiciusClasses(){

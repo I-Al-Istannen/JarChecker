@@ -10,7 +10,7 @@ import com.bwfcwalshy.jarchecker.gui.MainWindow;
 
 public class Main {
 
-    private static final String VERSION = "v0.6";
+    private static final String VERSION = "v0.7";
     public static MainWindow mw;
     public static boolean nogui = false;
 
@@ -74,7 +74,8 @@ public class Main {
 	Logger.emptyLine();
 	Logger.printNoInfo("Found: " + (checker.getFound().isEmpty() ? "Nothing!" : "\n" + checker.getFound()));
 	Logger.printNoInfo("Plugin is " + checker.getWarningLevel() + "!");
-
+	Logger.emptyLine();
+	
 	return checker.getSuspiciusClasses();
     }
 }
