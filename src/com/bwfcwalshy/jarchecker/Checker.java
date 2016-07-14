@@ -6,10 +6,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -31,70 +33,101 @@ public class Checker {
     public void check(File jar){
 	ZipInputStream input = null;
 	ZipFile zip = null;
-	try{
-	    zip = new ZipFile(jar);
-	    input = new ZipInputStream(new FileInputStream(jar));
-	    ZipEntry entry;
-	    while((entry = input.getNextEntry()) != null){
-		String className = entry.getName().replaceFirst("\\.java", "").replace('/', '.');
+	if(jar.getName().endsWith(".java")) {
+	    try {
+		String className = jar.getName().substring(0, jar.getName().lastIndexOf('.'));
 		boolean suspicious = false;
-		String clazz = "";
-		if(entry.getName().endsWith(".java")){
-		    InputStream zin = zip.getInputStream(entry);
-		    InputStreamReader in = new InputStreamReader(zin);
-		    BufferedReader br = new BufferedReader(in);
-		    int ln = 0;
-		    String line;
-		    while((line = br.readLine()) != null){
-			clazz += line;
-			List<Checks> result = checkLine(line, ++ln, className);
-			if(result.size() > 0){
-			    suspicious = true;
-			    clazz += " // Here found: ";
-			    for(Checks c : result) {
-				clazz += c.toString() + " ";
-			    }
+	    	String clazz = "";
+	    	int ln = 0;
+		for(String s : Files.readAllLines(jar.toPath())) {
+		    Map<Checks, Integer> result = checkLine(s, ++ln, className);
+		    clazz += "\n";
+		    if(result.size() > 0){
+			suspicious = true;
+			clazz += " // Here found: ";
+			int rc = 0;
+			for(Entry<Checks, Integer> c : result.entrySet()) {
+			    rc++;
+			    clazz += formatName(c.getKey());
+			    if(rc < result.size()) clazz += ", ";
 			}
-
-			clazz += "\n";
 		    }
-		    zin.close();
-		    in.close();
-		    br.close();
+		    clazz += "\n";
 		}
 		if(suspicious) {
-		    foundClasses.put(className, clazz);
+			foundClasses.put(className, clazz);
+		}
+	    } catch (IOException e) {
+		Logger.error(e);
+	    }
+	} else
+	    try{
+		zip = new ZipFile(jar);
+		input = new ZipInputStream(new FileInputStream(jar));
+		ZipEntry entry;
+		while((entry = input.getNextEntry()) != null){
+		    String className = entry.getName().replaceFirst("\\.java", "").replace('/', '.');
+		    boolean suspicious = false;
+		    String clazz = "";
+		    if(entry.getName().endsWith(".java")){
+			InputStream zin = zip.getInputStream(entry);
+			InputStreamReader in = new InputStreamReader(zin);
+			BufferedReader br = new BufferedReader(in);
+			int ln = 0;
+			String line;
+			while((line = br.readLine()) != null){
+			    clazz += line;
+			    Map<Checks, Integer> result = checkLine(line, ++ln, className);
+			    if(result.size() > 0){
+				suspicious = true;
+				clazz += " // Here found: ";
+				int lc = 0;
+				for(Entry<Checks, Integer> c : result.entrySet()) {
+				    lc++;
+				    clazz += formatName(c.getKey());
+				    if(lc < result.size()) clazz += ", ";
+				}
+			    }
+
+			    clazz += "\n";
+			}
+			zin.close();
+			in.close();
+			br.close();
+		    }
+		    if(suspicious) {
+			foundClasses.put(className, clazz);
+		    }
+		}
+	    }catch(IOException e){
+		Logger.error(e);
+	    }finally{
+		try {
+		    if(input != null)
+			input.close();
+
+		    if(zip != null)
+			zip.close();
+		}catch(IOException e){
+			Logger.error(e);
 		}
 	    }
-	}catch(IOException e){
-	    e.printStackTrace();
-	}finally{
-	    try {
-		if(input != null)
-		    input.close();
-
-		if(zip != null)
-		    zip.close();
-	    }catch(IOException e){
-		e.printStackTrace();
-	    }
-	}
     }
 
-    public List<Checks> checkLine(String line, int ln, String className){
-	List<Checks> founds = new ArrayList<>();
+    public Map<Checks, Integer> checkLine(String line, int ln, String className){
+	Map<Checks, Integer> founds = new HashMap<>();
 	for(Checks check : Checks.values()){
 	    if(!check.isPattern()){
 		if(line.contains(check.getString())) {
 		    found(check, ln, line, className);
-		    founds.add(check);
+		    founds.put(check, founds.containsKey(check) ? founds.get(check) + 1 : 0);
 		}
 	    }else{
 		Matcher matcher = check.getPattern().matcher(line);
 		boolean found = matcher.find();
 		if(found) {
 		    found(check, ln, line, className);
-		    founds.add(check);
+		    founds.put(check, founds.containsKey(check) ? founds.get(check) + 1 : 0);
 		}
 	    }
 	}
@@ -142,13 +175,25 @@ public class Checker {
     public int getWarningCount() {
 	return warningCount;
     }
-
+    
     public String getFound() {
 	StringBuilder sb = new StringBuilder();
+	Map<Checks, Integer> count = new HashMap<>();
 	for(Checks check : foundChecks){
-	    sb.append(check.toString().charAt(0) + check.toString().replace("_", " ").substring(1).toLowerCase() + "\n");
+	    count.put(check, count.containsKey(check) ? count.get(check)+1 : 0);
+	}
+	int rc = 0;
+	for(Entry<Checks, Integer> e : count.entrySet()) {
+	    rc++;
+	    sb.append(formatName(e.getKey()));
+	    sb.append(" x"+e.getValue());
+	    if(rc < count.size()) sb.append("\n");
 	}
 	return sb.toString();
+    }
+
+    private String formatName(Checks e) {
+	return e.toString().charAt(0) + e.toString().replace("_", " ").substring(1).toLowerCase();
     }
 
     public Map<String, String> getSuspiciusClasses(){
@@ -221,7 +266,7 @@ public class Checker {
 	    return "possibily malicious";
 	else if(maliciousCount == 0 && warningCount <= 3)
 	    return "probably not malicious";
-	else
+	else 
 	    return "Tell bwfcwalshy to add something here! " + maliciousCount + "," + warningCount;
     }
 

@@ -14,7 +14,7 @@ public class Decompiler {
 			Process p = builder.start();
 			p.waitFor();
 		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
+			Logger.error(e);
 			return false;
 		}
 		return true;

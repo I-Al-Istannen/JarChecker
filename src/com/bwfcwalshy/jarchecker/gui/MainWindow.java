@@ -38,11 +38,7 @@ public class MainWindow extends JFrame {
 	public MainWindow() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-				| UnsupportedLookAndFeelException e1) {
-			// This will never fire
-			e1.printStackTrace();
-		}
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e1) {}
 		setResizable(false);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setTitle("JarChecker " + Main.getVersion()+" by bwfcwalshy");
@@ -125,6 +121,20 @@ public class MainWindow extends JFrame {
 		JFileChooser fc = new JFileChooser();
 		fc.setAcceptAllFileFilterUsed(false);
 		fc.setFileFilter(new FileFilter() {
+		    
+		    @Override
+		    public boolean accept(File f) {
+			return f.getAbsolutePath().endsWith(".java") || f.isDirectory();
+		    }
+		    
+		    @Override
+		    public String getDescription() {
+			return "Java source file";
+		    }
+		    
+		});
+
+		fc.setFileFilter(new FileFilter() {
 
 			@Override
 			public boolean accept(File f) {
@@ -138,19 +148,6 @@ public class MainWindow extends JFrame {
 			
 		});
 		
-		fc.addChoosableFileFilter(new FileFilter() {
-
-			@Override
-			public boolean accept(File f) {
-				return f.getAbsolutePath().endsWith(".jar");
-			}
-
-			@Override
-			public String getDescription() {
-				return "JAR File";
-			}
-			
-		});
 		fc.setMultiSelectionEnabled(false);
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		
@@ -163,7 +160,8 @@ public class MainWindow extends JFrame {
 					jmi.setEnabled(false);
 					showSource.setEnabled(false);
 					res = Main.decompilerStart(fc.getSelectedFile().getAbsolutePath());
-					showSource.setEnabled(true);
+					if(res != null) 
+					    showSource.setEnabled(true);
 					jb.setEnabled(true);
 					jmi.setEnabled(true);
 				}

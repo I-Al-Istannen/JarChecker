@@ -10,7 +10,7 @@ import com.bwfcwalshy.jarchecker.gui.MainWindow;
 
 public class Main {
 
-    private static final String VERSION = "v0.6";
+    private static final String VERSION = "v0.7";
     public static MainWindow mw;
     public static boolean nogui = false;
 
@@ -45,25 +45,37 @@ public class Main {
 	Decompiler decompiler = new Decompiler();
 	File f = new File(path);
 	File export = new File(f.getName().replace(".jar", "") + "-src");
-
-	Logger.print("Decompiling file.");
-	boolean success = decompiler.decompile(f, export);
-	Checker checker = new Checker();
-	if(success){
-	    Logger.print("Decompiled jar file!");
-	    checker.check(new File(export.getAbsolutePath() + File.separator + f.getName()));
-	}else{
-	    Logger.error("Unable to decompile jar file!!");
-	    System.exit(1);
+	
+	if(!f.exists()) {
+	    Logger.error("The file " + f.getAbsolutePath() + " does not exist!");
+	    return null;
 	}
+	boolean success = true;
+	Checker checker = new Checker();
+	if(path.endsWith(".jar")) {
+	    Logger.print("Decompiling file.");
+	    success = decompiler.decompile(f, export);
+	    if(success){
+		    Logger.print("Decompiled jar file!");
+		    checker.check(new File(export.getAbsolutePath() + File.separator + f.getName()));
+		}else{
+		    Logger.error("Unable to decompile jar file!!");
+		    System.exit(1);
+		}
+	} else {
+	    checker.check(new File(path));
+	}
+	
+	
 	Logger.print("-----------------------------------------------------");
-	Logger.printNoInfo("Jar name: " + f.getName());
+	Logger.printNoInfo("File name: " + f.getName());
 	Logger.emptyLine();
 	Logger.printNoInfo("File checked with JarChecker " + VERSION + " by bwfcwalshy");
 	Logger.emptyLine();
 	Logger.printNoInfo("Found: " + (checker.getFound().isEmpty() ? "Nothing!" : "\n" + checker.getFound()));
 	Logger.printNoInfo("Plugin is " + checker.getWarningLevel() + "!");
-
+	Logger.emptyLine();
+	
 	return checker.getSuspiciusClasses();
     }
 }
