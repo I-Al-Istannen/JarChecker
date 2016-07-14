@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,54 +32,79 @@ public class Checker {
     public void check(File jar){
 	ZipInputStream input = null;
 	ZipFile zip = null;
-	try{
-	    zip = new ZipFile(jar);
-	    input = new ZipInputStream(new FileInputStream(jar));
-	    ZipEntry entry;
-	    while((entry = input.getNextEntry()) != null){
-		String className = entry.getName().replaceFirst("\\.java", "").replace('/', '.');
+	if(jar.getName().endsWith(".java")) {
+	    try {
+		String className = jar.getName().substring(0, jar.getName().lastIndexOf('.'));
 		boolean suspicious = false;
-		String clazz = "";
-		if(entry.getName().endsWith(".java")){
-		    InputStream zin = zip.getInputStream(entry);
-		    InputStreamReader in = new InputStreamReader(zin);
-		    BufferedReader br = new BufferedReader(in);
-		    int ln = 0;
-		    String line;
-		    while((line = br.readLine()) != null){
-			clazz += line;
-			List<Checks> result = checkLine(line, ++ln, className);
-			if(result.size() > 0){
-			    suspicious = true;
-			    clazz += " // Here found: ";
-			    for(Checks c : result) {
-				clazz += c.toString() + " ";
-			    }
+	    	String clazz = "";
+	    	int ln = 0;
+		for(String s : Files.readAllLines(jar.toPath())) {
+		    List<Checks> result = checkLine(s, ++ln, className);
+		    clazz += "\n";
+		    if(result.size() > 0){
+			suspicious = true;
+			clazz += " // Here found: ";
+			for(Checks c : result) {
+			    clazz += c.toString() + " ";
 			}
-
-			clazz += "\n";
 		    }
-		    zin.close();
-		    in.close();
-		    br.close();
+		    clazz += "\n";
 		}
 		if(suspicious) {
-		    foundClasses.put(className, clazz);
+			foundClasses.put(className, clazz);
+		}
+	    } catch (IOException e) {
+		Logger.error(e);
+	    }
+	} else
+	    try{
+		zip = new ZipFile(jar);
+		input = new ZipInputStream(new FileInputStream(jar));
+		ZipEntry entry;
+		while((entry = input.getNextEntry()) != null){
+		    String className = entry.getName().replaceFirst("\\.java", "").replace('/', '.');
+		    boolean suspicious = false;
+		    String clazz = "";
+		    if(entry.getName().endsWith(".java")){
+			InputStream zin = zip.getInputStream(entry);
+			InputStreamReader in = new InputStreamReader(zin);
+			BufferedReader br = new BufferedReader(in);
+			int ln = 0;
+			String line;
+			while((line = br.readLine()) != null){
+			    clazz += line;
+			    List<Checks> result = checkLine(line, ++ln, className);
+			    if(result.size() > 0){
+				suspicious = true;
+				clazz += " // Here found: ";
+				for(Checks c : result) {
+				    clazz += c.toString() + " ";
+				}
+			    }
+
+			    clazz += "\n";
+			}
+			zin.close();
+			in.close();
+			br.close();
+		    }
+		    if(suspicious) {
+			foundClasses.put(className, clazz);
+		    }
+		}
+	    }catch(IOException e){
+		Logger.error(e);
+	    }finally{
+		try {
+		    if(input != null)
+			input.close();
+
+		    if(zip != null)
+			zip.close();
+		}catch(IOException e){
+			Logger.error(e);
 		}
 	    }
-	}catch(IOException e){
-	    e.printStackTrace();
-	}finally{
-	    try {
-		if(input != null)
-		    input.close();
-
-		if(zip != null)
-		    zip.close();
-	    }catch(IOException e){
-		e.printStackTrace();
-	    }
-	}
     }
 
     public List<Checks> checkLine(String line, int ln, String className){

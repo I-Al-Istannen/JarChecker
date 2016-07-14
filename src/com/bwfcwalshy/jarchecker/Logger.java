@@ -1,5 +1,8 @@
 package com.bwfcwalshy.jarchecker;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -38,5 +41,18 @@ public class Logger {
 	public static String getTime(){
 		Date date = new Date(System.currentTimeMillis());
 		return "[" + sdf.format(date) + "]";
+	}
+
+	public static void error(Exception e) {
+	    StringWriter sw = new StringWriter();
+	    PrintWriter pw = new PrintWriter(sw);
+	    e.printStackTrace(pw);
+	    error(sw.toString());
+	    pw.close();
+	    try {
+		sw.close();
+	    } catch (IOException e1) {
+		e1.printStackTrace();
+	    }
 	}
 }

@@ -15,6 +15,7 @@ public class Main {
     public static boolean nogui = false;
 
     public static void main(String[] args) throws ZipException, IOException {
+	System.setErr(System.out); // Redirect the error stream
 	if(args.length == 1) {
 	    nogui = true;
 	    String path;
@@ -45,19 +46,30 @@ public class Main {
 	Decompiler decompiler = new Decompiler();
 	File f = new File(path);
 	File export = new File(f.getName().replace(".jar", "") + "-src");
-
-	Logger.print("Decompiling file.");
-	boolean success = decompiler.decompile(f, export);
-	Checker checker = new Checker();
-	if(success){
-	    Logger.print("Decompiled jar file!");
-	    checker.check(new File(export.getAbsolutePath() + File.separator + f.getName()));
-	}else{
-	    Logger.error("Unable to decompile jar file!!");
-	    System.exit(1);
+	
+	if(!f.exists()) {
+	    Logger.error("The file " + f.getAbsolutePath() + " does not exist!");
+	    return null;
 	}
+	boolean success = true;
+	Checker checker = new Checker();
+	if(path.endsWith(".jar")) {
+	    Logger.print("Decompiling file.");
+	    success = decompiler.decompile(f, export);
+	    if(success){
+		    Logger.print("Decompiled jar file!");
+		    checker.check(new File(export.getAbsolutePath() + File.separator + f.getName()));
+		}else{
+		    Logger.error("Unable to decompile jar file!!");
+		    System.exit(1);
+		}
+	} else {
+	    checker.check(new File(path));
+	}
+	
+	
 	Logger.print("-----------------------------------------------------");
-	Logger.printNoInfo("Jar name: " + f.getName());
+	Logger.printNoInfo("File name: " + f.getName());
 	Logger.emptyLine();
 	Logger.printNoInfo("File checked with JarChecker " + VERSION + " by bwfcwalshy");
 	Logger.emptyLine();
