@@ -21,6 +21,7 @@ import javax.swing.filechooser.FileFilter;
 
 import com.bwfcwalshy.jarchecker.Logger;
 import com.bwfcwalshy.jarchecker.Main;
+import javax.swing.JProgressBar;
 
 public class MainWindow extends JFrame {
 
@@ -34,6 +35,7 @@ public class MainWindow extends JFrame {
 	public TextArea log;
 	private JButton ssc;
 	private Map<String, String> res;
+	public JProgressBar decomp;
 
 	public MainWindow() {
 		try {
@@ -43,6 +45,11 @@ public class MainWindow extends JFrame {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setTitle("JarChecker " + Main.getVersion()+" by bwfcwalshy");
 		setBounds(100, 100, 450, 358);
+
+		JProgressBar work = new JProgressBar();
+		work.setEnabled(false);
+		work.setBounds(10, 8, 146, 14);
+		getContentPane().add(work);
 		
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -56,12 +63,13 @@ public class MainWindow extends JFrame {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				begin(check, MenuCheck, ssc);
+				begin(check, MenuCheck, ssc, work);
 			}
 		});
 		
 		JSeparator separator = new JSeparator();
 		FileMenu.add(separator);
+		
 		
 		JMenuItem MenuExit = new JMenuItem("Exit");
 		MenuExit.addActionListener(new ActionListener() {
@@ -89,7 +97,7 @@ public class MainWindow extends JFrame {
 		check = new JButton("Check");
 		check.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				begin(check, MenuCheck, ssc);
+				begin(check, MenuCheck, ssc, work);
 			}
 		});
 		check.setBounds(0, 274, 444, 34);
@@ -114,9 +122,14 @@ public class MainWindow extends JFrame {
 		});
 		ssc.setBounds(0, 240, 444, 34);
 		getContentPane().add(ssc);
+		
+		decomp = new JProgressBar();
+		decomp.setBounds(288, 8, 146, 14);
+		decomp.setEnabled(false);
+		getContentPane().add(decomp);
 	}
 
-	private void begin(JButton jb, JMenuItem jmi, JButton showSource) {
+	private void begin(JButton jb, JMenuItem jmi, JButton showSource, JProgressBar work) {
 		
 		JFileChooser fc = new JFileChooser();
 		fc.setAcceptAllFileFilterUsed(false);
@@ -159,9 +172,12 @@ public class MainWindow extends JFrame {
 					jb.setEnabled(false);
 					jmi.setEnabled(false);
 					showSource.setEnabled(false);
+					work.setEnabled(true);
+					work.setIndeterminate(true);
 					res = Main.decompilerStart(fc.getSelectedFile().getAbsolutePath());
 					if(res != null) 
 					    showSource.setEnabled(true);
+					work.setEnabled(false);
 					jb.setEnabled(true);
 					jmi.setEnabled(true);
 				}
@@ -170,5 +186,4 @@ public class MainWindow extends JFrame {
 		
 		
 	}
-
 }
