@@ -12,7 +12,7 @@ public class ShowSource extends JFrame {
     private static final long serialVersionUID = -2419068241345357741L;
 
     public ShowSource(String source, String className) {
-//    	setResizable(false);
+	//setResizable(false);
 	setBounds(250, 250, 250, 250);
 	setTitle(className + " source");
 	setDefaultCloseOperation(HIDE_ON_CLOSE);

@@ -30,8 +30,11 @@ public class Decompiler {
 	    Enumeration<? extends ZipEntry> entries = from.entries();
 	    while(entries.hasMoreElements()) {
 		ZipEntry next = entries.nextElement();
-		if(next.getName().endsWith(".class") && !next.isDirectory()) ec++;
+		if(next.getName().endsWith(".class") && !next.getName().contains("$")) {
+		    ec++;
+		}
 	    }
+	    System.out.println(ec);
 	    from.close();
 	    Main.mw.decomp.setMaximum(ec*2);
 	    new Thread(new Runnable() {
@@ -45,6 +48,7 @@ public class Decompiler {
 			try {
 			    while((line = br.readLine()) != null) {
 				a.appendLine(line);
+				Logger.debug(line);
 				Matcher m1 = p1.matcher(line);
 				Matcher m2 = p2.matcher(line);
 				if(m1.matches() || m2.matches()) {
@@ -54,26 +58,27 @@ public class Decompiler {
 				    wait.set(false);
 				    Logger.error("There was an error running fernflower!");
 				    Logger.error("Here is the output:");
-				    for(String s : a.get().split(Pattern.quote("\n"))) {
+				    for(String s : a.get().split("\n")) {
 					Logger.error(s);
 				    }
 				}
 				if(!Main.nogui) {
 				    Main.mw.decomp.setValue(lc);
 				}
-				wait.set(p.isAlive());
 			    }
 			} catch (IOException e) {
-			    e.printStackTrace();
+			    Logger.error(e);
+
 			}
 
 		    }
-
+		    System.err.println(lc);
 		}
 
 	    }, "ListenerThread").start();
-	    while(wait.get()) {}
-	} catch (IOException e) {
+	    p.waitFor();
+	    wait.set(false);
+	} catch (IOException | InterruptedException e) {
 	    Logger.error(e);
 	}
 

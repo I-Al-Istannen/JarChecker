@@ -19,14 +19,14 @@ public class SuspiciousClassDisplay extends JFrame {
     private static final long serialVersionUID = 3663577451403352639L;
     private final JList<String> classes = new JList<String>(new DefaultListModel<String>());
     private Map<String, ShowSource> ss = new HashMap<>();
-    
+
     public SuspiciousClassDisplay(Map<String, String> res) {
-    	setResizable(false);
+	setResizable(false);
 	setBounds(250, 250, 300, 350);
 	getContentPane().setLayout(null);
 	classes.setBounds(0, 34, 294, 287);
 	getContentPane().add(classes);
-	
+
 	JLabel lblClasses = new JLabel("Classes");
 	lblClasses.setBounds(10, 9, 274, 14);
 	getContentPane().add(lblClasses);
@@ -34,12 +34,12 @@ public class SuspiciousClassDisplay extends JFrame {
 	    ss.put(e.getKey(), new ShowSource(e.getValue(), e.getKey()));
 	    ((DefaultListModel<String>)classes.getModel()).addElement(e.getKey());
 	}
-	
+
 	classes.addMouseListener(new MouseAdapter() {
 	    public void mouseClicked(MouseEvent e) {
-	        if(e.getClickCount() % 2 == 0) {
-	            ss.get(classes.getSelectedValue()).setVisible(true);
-	        }
+		if(e.getClickCount() % 2 == 0) {
+		    ss.get(classes.getSelectedValue()).setVisible(true);
+		}
 	    }
 	});
     }
