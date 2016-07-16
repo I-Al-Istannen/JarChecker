@@ -11,17 +11,21 @@ import com.bwfcwalshy.jarchecker.gui.MainWindow;
 public class Main {
 
     private static boolean debug = false;
-    private static final String VERSION = "v0.7";
+    private static final String VERSION = "v0.7.5";
     public static MainWindow mainWindow;
     public static boolean nogui = false;
+    private static boolean nobar = false;
 
     public static void main(String[] args) throws ZipException, IOException {
 	for(String s : args) {
 	    if(s.equalsIgnoreCase("--debug")) {
 		debug = true;
 	    }
+	    if(s.equalsIgnoreCase("--nobar")) {
+		nobar = true;
+	    }
 	}
-	if(args.length == 1 && !args[0].equalsIgnoreCase("--debug")) {
+	if(args.length > 0 && !args[0].equalsIgnoreCase("--debug")) {
 	    nogui = true;
 	    String path;
 	    Scanner scanner = null;
@@ -59,6 +63,7 @@ public class Main {
 	Logger.debug("Starting check of: " + f.getAbsolutePath());
 	boolean success = true;
 	Checker checker = new Checker();
+	try{Thread.sleep(100);}catch(Exception e){}
 	if(path.endsWith(".jar")) {
 	    Logger.print("Decompiling file.");
 	    success = decompiler.decompile(f, export);
@@ -92,5 +97,9 @@ public class Main {
 
     public static void doDebug(boolean debug) {
 	Main.debug = debug;
+    }
+    
+    public static boolean printBar() {
+	return !nobar;
     }
 }

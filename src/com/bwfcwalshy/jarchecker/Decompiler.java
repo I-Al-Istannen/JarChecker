@@ -45,6 +45,8 @@ public class Decompiler {
 	    // Sets the ProgressBar max to expected line count
 	    if(!Main.nogui) 
 		Main.mainWindow.decomp.setMaximum(endLineCount*2);
+	    // It says it needs to be final, I really do not see why
+	    final int finalEndLineCount = endLineCount;
 	    // Makes a listener thread
 	    new Thread(new Runnable() {
 
@@ -89,21 +91,37 @@ public class Decompiler {
 				// Sets the ProgressBar in nogui is false
 				if(!Main.nogui) {
 				    Main.mainWindow.decomp.setValue(currentLines);
+				} else if(!Main.printDebug() && Main.printBar()) {
+				    // Needs work on progress bar for console.
+				    float onePercent = ((float)(currentLines) / (float)(finalEndLineCount * 2));
+				    float percentage = onePercent * 100F;
+				    int roundPercent = Math.round(percentage);
+				    StringBuilder barBuilder = new StringBuilder();
+				    barBuilder.append("\r[");
+				    while(barBuilder.length() < 102) {
+					if(barBuilder.length() < roundPercent) {
+					    barBuilder.append("=");
+					} else if(barBuilder.length() == roundPercent) {
+					    barBuilder.append(">");
+					} else barBuilder.append(" ");
+				    }
+				    barBuilder.append("] " + roundPercent + "%");
+				    if(wait.get())System.out.print(barBuilder.toString());
 				}
 			    }
 			} catch (IOException e) {
 			    // Something went wrong.. Again..
 			    Logger.error(e);
-
 			}
 
 		    }
+		    Logger.emptyLine();
 		}
 
 	    }, "ListenerThread").start();
 	    // Waits for the process end
 	    p.waitFor();
-	    // Breats the loop in Listener thread
+	    // Breaks the loop in Listener thread
 	    if(!wait.getAndSet(false)) {
 		return false;
 	    }
