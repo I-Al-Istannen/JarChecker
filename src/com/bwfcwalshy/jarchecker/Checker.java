@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -302,7 +301,6 @@ public class Checker {
 	// @formatter:on
 	private Predicate<String> predicate;
 	private WarningType type;
-	private String clazz;
 
 	/**
 	 * @param string The String it must contain in oder to fire
