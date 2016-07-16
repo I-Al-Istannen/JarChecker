@@ -7,7 +7,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * A simple Logger class, printing to the GUI and the console 
+ * A simple Logger class, printing to the GUI and the console
  */
 public class Logger {
 
@@ -16,52 +16,57 @@ public class Logger {
     /**
      * Prints a message, prefix is "{@link #getTime()} [INFO]"
      * 
-     * @param msg The message to print
+     * @param msg
+     *            The message to print
      */
-    public static void print(String msg){
+    public static void print(String msg) {
 	String x = getTime() + " [INFO] " + msg;
-	if(!Main.isNoGui()) Main.getMainWindow().log.append(x + "\n");
-	System.out.println(x);
+	printNoInfo(x);
     }
 
     /**
      * Will just print the message with no prefix
      * 
-     * @param msg The message to print
+     * @param msg
+     *            The message to print
      */
     public static void printNoInfo(String msg) {
 	System.out.println(msg);
-	if(!Main.isNoGui()) Main.getMainWindow().log.append(msg + "\n");
+	if (!Main.isNoGui()) {
+	    Main.getMainWindow().appendToLog(msg + System.lineSeparator());
+	}
     }
 
-    /** 
+    /**
      * Will print the message with the prefix: "{@link #getTime()} [DEBUG]"
      * 
-     * @param msg The message to print
+     * @param msg
+     *            The message to print
      */
-    public static void debug(String msg){
-	if(!Main.printDebug()) return;
+    public static void debug(String msg) {
+	if (!Main.isPrintDebug())
+	    return;
 	msg += " (" + new Throwable().getStackTrace()[1] + ")";
-	String x = getTime() + " [DEBUG] "+ msg;
-	if(!Main.isNoGui()) Main.getMainWindow().log.append(x + "\n");
-	System.out.println(x);
+	String x = getTime() + " [DEBUG] " + msg;
+	printNoInfo(x);
     }
 
     /**
      * Will print the message with the prefix: "{@link #getTime()} [ERROR]"
      * 
-     * @param msg The message to print
+     * @param msg
+     *            The message to print
      */
-    public static void error(String msg){
+    public static void error(String msg) {
 	String x = getTime() + " [ERROR] " + msg;
-	if(!Main.isNoGui()) Main.getMainWindow().log.append(x + "\n");
-	System.err.println(x);
+	printNoInfo(x);
     }
 
     /**
      * Will print the exception with the prefix: "{@link #getTime()} [ERROR]"
      * 
-     * @param e The exception to print
+     * @param e
+     *            The exception to print
      */
     public static void error(Exception e) {
 	StringWriter sw = new StringWriter();
@@ -80,14 +85,13 @@ public class Logger {
      * Prints an empty line
      */
     public static void emptyLine() {
-	System.out.println();
-	if(!Main.isNoGui()) Main.getMainWindow().log.append("\n");
+	printNoInfo("");
     }
 
     /**
-     * Formatted using a {@link DateTimeFormatter}.
+     * Formatted using a {@link DateTimeFormatter}. <br>
      * <br>
-     * <br>Current pattern {@link DateTimeFormatter#ISO_TIME}
+     * Current pattern {@link DateTimeFormatter#ISO_TIME}
      * 
      * @return The system time
      */

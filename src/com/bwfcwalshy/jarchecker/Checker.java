@@ -9,13 +9,20 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
+
+import com.bwfcwalshy.jarchecker.symbol_tables.SymbolTableTree;
+import com.bwfcwalshy.jarchecker.symbol_tables.SymbolTreeParser;
 
 /**
  * Checks the jar file for malicious content
@@ -28,6 +35,9 @@ public class Checker {
     private int maliciousCount;
     private int warningCount;
 
+    private static SymbolTableTree currentSymbolTree;
+    private static int currentLine;
+
     /**
      * Creates a new Checker...
      */
@@ -38,10 +48,12 @@ public class Checker {
 
     /**
      * TODO: Cleanup
-     *  
-     * Checks the file. If it is a .java file, it will be checked. Otherwise it will be assumed it is a .jar file...
      * 
-     * @param jar The File to check
+     * Checks the file. If it is a .java file, it will be checked. Otherwise it
+     * will be assumed it is a .jar file...
+     * 
+     * @param jarFile
+     *            The File to check
      */
     public void check(File jarFile) {
 	ZipInputStream zipInput = null;
@@ -53,7 +65,16 @@ public class Checker {
 		boolean suspicious = false;
 		String clazz = "";
 		int lineNumber = 0;
-		for (String s : Files.readAllLines(jarFile.toPath())) {
+
+		List<String> allLines = Files.readAllLines(jarFile.toPath());
+		SymbolTreeParser parser = new SymbolTreeParser(
+			allLines.stream().collect(Collectors.joining(System.lineSeparator())), jarFile);
+		parser.parse();
+		currentSymbolTree = parser.getRootNode();
+
+		for (String s : allLines) {
+		    currentLine = lineNumber + 1;
+
 		    Map<Checks, Integer> result = checkLine(s, ++lineNumber, className);
 		    clazz += "\n";
 		    if (result.size() > 0) {
@@ -85,7 +106,8 @@ public class Checker {
 		while ((entry = zipInput.getNextEntry()) != null) {
 		    // Get the full class name (domain.website.project...)
 		    String className = entry.getName().replaceFirst("\\.java", "").replace('/', '.');
-		    // Marks the file as suspicious so it can be added to the source map
+		    // Marks the file as suspicious so it can be added to the
+		    // source map
 		    boolean suspicious = false;
 		    // Stores classes source
 		    String clazz = "";
@@ -96,13 +118,26 @@ public class Checker {
 				InputStreamReader in = new InputStreamReader(zin);
 				BufferedReader br = new BufferedReader(in);) {
 
-
 			    int lineNumber = 0;
-			    // Stores the current line
-			    String line;
-			    while ((line = br.readLine()) != null) {
+			    // a tmp
+			    String line2;
+			    StringBuilder lines = new StringBuilder();
+
+			    while ((line2 = br.readLine()) != null) {
+				lines.append(line2);
+				lines.append(System.lineSeparator());
+			    }
+
+			    SymbolTreeParser parser = new SymbolTreeParser(lines.toString(), jarFile);
+			    parser.parse();
+			    currentSymbolTree = parser.getRootNode();
+
+			    for (String line : lines.toString().split(System.lineSeparator())) {
 				// Adds the current line to the class
 				clazz += line;
+
+				currentLine = lineNumber + 1;
+
 				// Finds all of the checks that are on this line
 				Map<Checks, Integer> result = checkLine(line, ++lineNumber, className);
 				// If it found anything
@@ -118,13 +153,14 @@ public class Checker {
 					lc++;
 					// Adds the found check
 					clazz += c.getKey().toString();
-					// If it is not the last one add a comma and a space
+					// If it is not the last one add a comma
+					// and a space
 					if (lc < result.size())
 					    clazz += ", ";
 				    }
 				}
 
-				// Newline 
+				// Newline
 				clazz += "\n";
 			    }
 
@@ -153,10 +189,14 @@ public class Checker {
 
     // Function improved upon a request by I Al Istannen
     /**
-     * @param line The line which is being checked
-     * @param ln The line number
-     * @param className The name of the class the line is in
-     * @return A map with all the findings. Key is the check type, value the amount of times it occurred.
+     * @param line
+     *            The line which is being checked
+     * @param lineNumber
+     *            The line number
+     * @param className
+     *            The name of the class the line is in
+     * @return A map with all the findings. Key is the check type, value the
+     *         amount of times it occurred.
      */
     public Map<Checks, Integer> checkLine(String line, int lineNumber, String className) {
 	Map<Checks, Integer> founds = new HashMap<>();
@@ -171,10 +211,14 @@ public class Checker {
     }
 
     /**
-     * @param check The Check that fired
-     * @param line The line it was in
-     * @param ln The line number
-     * @param path The path of the file
+     * @param check
+     *            The Check that fired
+     * @param line
+     *            The line it was in
+     * @param lineNumber
+     *            The line number
+     * @param path
+     *            The path of the file
      */
     public void found(Checks check, int lineNumber, String line, String path) {
 	if (check.getType() == WarningType.MALICIOUS)
@@ -182,36 +226,36 @@ public class Checker {
 	else
 	    warningCount++;
 
-	if(foundChecks.containsKey(path)) {
+	if (foundChecks.containsKey(path)) {
 	    foundChecks.get(path).add(check);
 	} else {
 	    ArrayList<Checks> toPut = new ArrayList<>();
 	    toPut.add(check);
 	    foundChecks.put(path, toPut);
 	}
-	
-	Logger.print(
-		"Found " + check.toString() + " on line " + lineNumber + " in type " + path + "!! Type=" + check.getType());
+
+	Logger.print("Found " + check.toString() + " on line " + lineNumber + " in type " + path + "!! Type="
+		+ check.getType());
 	Logger.print("Line " + lineNumber + ": " + line.replace("\t", ""));
     }
 
     /**
-     * Performs some additional checks.
-     * <br>Currently:
-     * <br>If both, setOp and hardCodedName have fired
-     * <br>If opMe and setOp have fired.
+     * Performs some additional checks. <br>
+     * Currently: <br>
+     * If both, setOp and hardCodedName have fired <br>
+     * If opMe and setOp have fired.
      */
     public void extraChecks() {
-	for(ArrayList<Checks> foundChecks : this.foundChecks.values()) {
+	for (ArrayList<Checks> foundChecks : this.foundChecks.values()) {
 	    if (foundChecks.contains(Checks.SET_OP) && foundChecks.contains(Checks.EQUALS_NAME)) {
-		    warningCount -= 2;
-		    maliciousCount++;
-		}
+		warningCount -= 2;
+		maliciousCount++;
+	    }
 
-		if (foundChecks.contains(Checks.OP_ME) && foundChecks.contains(Checks.SET_OP)) {
-		    warningCount--;
-		    maliciousCount++;
-		}
+	    if (foundChecks.contains(Checks.OP_ME) && foundChecks.contains(Checks.SET_OP)) {
+		warningCount--;
+		maliciousCount++;
+	    }
 	}
     }
 
@@ -230,8 +274,8 @@ public class Checker {
     }
 
     /**
-     * <b>Format:</b>
-     * <br>"[Check type] x[amount of times it occurred]" (e.g. "URL x2")
+     * <b>Format:</b> <br>
+     * "[Check type] x[amount of times it occurred]" (e.g. "URL x2")
      * 
      * @return A String with all the found checks.
      */
@@ -239,7 +283,7 @@ public class Checker {
 	StringBuilder sb = new StringBuilder();
 	Map<Checks, Integer> count = new HashMap<>();
 	for (ArrayList<Checks> checkList : foundChecks.values()) {
-	    for(Checks check : checkList) {
+	    for (Checks check : checkList) {
 		count.put(check, count.containsKey(check) ? count.get(check) + 1 : 1);
 	    }
 	}
@@ -266,36 +310,56 @@ public class Checker {
      * An enumeration containing all checks
      */
     enum Checks {
-	/* BEGIN INSTRUCTIONS BLOCK
-	 * 
-	 * To contribute to the checking of this program
-	 * use the following pattern and replace the things with appropriate
-	 * 
-	 * CHECK_NAME(Pattern|String|Predicate<String>, WarningType)
-	 * 
-	 * WarningType determines the level of danger, while the first argument will do one of the following:
-	 *   - Check if a string matches the Pattern you provided
-	 *   - Checks does a line contain a certain substring
-	 *   - Run a .test() from Predicate on the line in order to check does it have something bad in it
-	 * 
-	 * END INSTRUCTIONS BLOCK
-	 * 
-	 * TODO: Expand
+	/*
+	 * BEGIN INSTRUCTIONS BLOCK To contribute to the checking of this
+	 * program use the following pattern and replace the things with
+	 * appropriate CHECK_NAME(Pattern|String|Predicate<String>, WarningType)
+	 * WarningType determines the level of danger, while the first argument
+	 * will do one of the following: - Check if a string matches the Pattern
+	 * you provided - Checks does a line contain a certain substring - Run a
+	 * .test() from Predicate on the line in order to check does it have
+	 * something bad in it END INSTRUCTIONS BLOCK TODO: Expand
 	 */
-	
-	// formatter tags because eclipse decided it wants to totally destroy the enum structure...
+
+	// formatter tags because eclipse decided it wants to totally destroy
+	// the enum structure...
 	// @formatter:off
 	THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS), 
 	WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS), 
 	RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS), 
 	ENDLESS_LOOP(Pattern.compile("for\\((\\s*)?;(\\s*)?;(\\s*)?;(\\s*)?\\)"), WarningType.MALICIOUS), 
-	SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"), WarningType.WARNING), 
-	EQUALS_NAME(Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase|contains|contentEquals|compareTo|compareToIgnoreCase|endsWith|startsWith|matches)\\(\\\"[a-zA-Z0-9]+\\\"\\)"), WarningType.WARNING), 
+	SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"), WarningType.WARNING),
+	EQUALS_NAME(line -> {
+		Pattern pattern = Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase|contains|contentEquals|compareTo|compareToIgnoreCase|endsWith|startsWith|matches)\\(\\\"[a-zA-Z0-9]+\\\"\\)");
+		if(!pattern.matcher(line).find()) {
+			return false;
+		}
+		else {
+			Pattern nameOfObjectPattern = Pattern.compile("([^\\s()!]+)(?=.getName\\(\\))");
+			Matcher matcher = nameOfObjectPattern.matcher(line);
+			if(matcher.find()) {
+				String name = matcher.group(1);
+				Optional<String> type = currentSymbolTree.getFullyQualifiedType(currentLine, name);
+				if(type.isPresent()) {
+				    Logger.print("Found: " + name + " " + type.get() + " " + line);
+				    return !type.get().equals("org.bukkit.command.Command");
+				}
+				else {
+				    Logger.print("No type: " + name + " " + line);
+				}
+			}
+			else {
+				Logger.print("No match! Please check the Parser: " + line);
+			}
+			return true;
+		}
+	}, WarningType.WARNING),
 	STAR_PERM(Pattern.compile("addPermission\\((\\s*)?\"\\*\""), WarningType.WARNING), 
 	URL(Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"), WarningType.WARNING), 
 	IP_ADDRESS(Pattern.compile("\\d{1,3}.+\\:?\\d{1,5}$"), WarningType.WARNING),
 	// We can't really make this more accurate.
-	OP_ME(Pattern.compile("op(\\s|_|-)?me"), WarningType.MALICIOUS), 
+	OP_ME(Pattern.compile("op(\\s|_|-)?me"), WarningType.MALICIOUS),
+	SHUTDOWN(".shutdown()", WarningType.MALICIOUS),
 	EXIT(".exit(", WarningType.MALICIOUS);
 
 	// @formatter:on
@@ -303,26 +367,32 @@ public class Checker {
 	private WarningType type;
 
 	/**
-	 * @param string The String it must contain in oder to fire
-	 * @param type The type of the check
+	 * @param string
+	 *            The String it must contain in oder to fire
+	 * @param type
+	 *            The type of the check
 	 */
-	Checks(String string, WarningType type) {
+	private Checks(String string, WarningType type) {
 	    this((line) -> line.contains(string), type);
 	}
 
 	/**
-	 * @param pattern The Pattern it must contain in oder to fire
-	 * @param type The type of the check
+	 * @param pattern
+	 *            The Pattern it must contain in oder to fire
+	 * @param type
+	 *            The type of the check
 	 */
-	Checks(Pattern pattern, WarningType type) {
+	private Checks(Pattern pattern, WarningType type) {
 	    this((line) -> pattern.matcher(line).find(), type);
 	}
 
 	/**
-	 * @param predicate The predicate that must match in oder to fire
-	 * @param type The type of the check
+	 * @param predicate
+	 *            The predicate that must match in oder to fire
+	 * @param type
+	 *            The type of the check
 	 */
-	Checks(Predicate<String> predicate, WarningType type) {
+	private Checks(Predicate<String> predicate, WarningType type) {
 	    this.predicate = predicate;
 	    this.type = type;
 	}
@@ -333,7 +403,8 @@ public class Checker {
 	}
 
 	/**
-	 * @param input The input to check
+	 * @param input
+	 *            The input to check
 	 * @return True if this check fires for the input
 	 */
 	public boolean matches(String input) {
@@ -353,7 +424,8 @@ public class Checker {
     }
 
     /**
-     * Notes how likely the plugin is malicious. Has some categories, look at it :P
+     * Notes how likely the plugin is malicious. Has some categories, look at it
+     * :P
      * 
      * @return The warning level.
      */

@@ -9,11 +9,13 @@ import java.io.File;
 import java.util.Map;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -21,8 +23,6 @@ import javax.swing.filechooser.FileFilter;
 
 import com.bwfcwalshy.jarchecker.Logger;
 import com.bwfcwalshy.jarchecker.Main;
-import javax.swing.JProgressBar;
-import javax.swing.JCheckBox;
 
 /**
  * The main window for the GUI
@@ -33,10 +33,11 @@ public class MainWindow extends JFrame {
     private final MainWindow inst = this;
     private JButton check;
     private JMenuItem MenuCheck;
-    public TextArea log;
+
+    private TextArea log;
     private JButton ssc;
     private Map<String, String> res;
-    public JProgressBar decomp;
+    private JProgressBar decompilingProgressBar;
 
     /**
      * A new instance with the default parameters
@@ -44,10 +45,12 @@ public class MainWindow extends JFrame {
     public MainWindow() {
 	try {
 	    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-	} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e1) {}
+	} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+		| UnsupportedLookAndFeelException e1) {
+	}
 	setResizable(false);
 	setDefaultCloseOperation(EXIT_ON_CLOSE);
-	setTitle("JarChecker " + Main.getVersion()+" by bwfcwalshy");
+	setTitle("JarChecker " + Main.getVersion() + " by bwfcwalshy");
 	setBounds(100, 100, 450, 358);
 
 	JProgressBar work = new JProgressBar();
@@ -74,7 +77,6 @@ public class MainWindow extends JFrame {
 	JSeparator separator = new JSeparator();
 	FileMenu.add(separator);
 
-
 	JMenuItem MenuExit = new JMenuItem("Exit");
 	MenuExit.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
@@ -100,13 +102,14 @@ public class MainWindow extends JFrame {
 	JCheckBox debug = new JCheckBox("Debug");
 	debug.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
-		if(debug.isEnabled()) Main.doDebug(debug.isSelected());
+		if (debug.isEnabled())
+		    Main.setDebug(debug.isSelected());
 	    }
 	});
 	menuBar.add(debug);
 	getContentPane().setLayout(null);
 
-	if(Main.printDebug()) {
+	if (Main.isPrintDebug()) {
 	    debug.setSelected(true);
 	    debug.setEnabled(false);
 	}
@@ -140,17 +143,21 @@ public class MainWindow extends JFrame {
 	ssc.setBounds(0, 240, 444, 34);
 	getContentPane().add(ssc);
 
-	decomp = new JProgressBar();
-	decomp.setBounds(288, 8, 146, 14);
-	decomp.setEnabled(false);
-	getContentPane().add(decomp);
+	decompilingProgressBar = new JProgressBar();
+	decompilingProgressBar.setBounds(288, 8, 146, 14);
+	decompilingProgressBar.setEnabled(false);
+	getContentPane().add(decompilingProgressBar);
     }
 
     /**
-     * @param checkButton The check button. Will be disabled while it decompiles.
-     * @param checkMenuItem The same just with the menu item
-     * @param showSourceButton The showSource button
-     * @param workBar Shows the decompilation process
+     * @param checkButton
+     *            The check button. Will be disabled while it decompiles.
+     * @param checkMenuItem
+     *            The same just with the menu item
+     * @param showSourceButton
+     *            The showSource button
+     * @param workBar
+     *            Shows the decompilation process
      */
     private void begin(JButton checkButton, JMenuItem checkMenuItem, JButton showSourceButton, JProgressBar workBar) {
 
@@ -187,32 +194,55 @@ public class MainWindow extends JFrame {
 	fc.setMultiSelectionEnabled(false);
 	fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-
-	if(fc.showOpenDialog(inst) == JFileChooser.APPROVE_OPTION) {
+	if (fc.showOpenDialog(inst) == JFileChooser.APPROVE_OPTION) {
 	    Logger.print("Beginning scan of " + fc.getSelectedFile().getAbsolutePath());
 	    new Thread("Scan") {
 		public void run() {
 		    checkButton.setEnabled(false);
-		    decomp.setEnabled(true);
+		    decompilingProgressBar.setEnabled(true);
 		    checkMenuItem.setEnabled(false);
 		    showSourceButton.setEnabled(false);
 		    workBar.setEnabled(true);
 		    workBar.setIndeterminate(true);
 		    res = Main.decompilerStart(fc.getSelectedFile().getAbsolutePath());
-		    if(res != null && res.size() > 0) 
+		    if (res != null && res.size() > 0)
 			showSourceButton.setEnabled(true);
 		    workBar.setIndeterminate(false);
-		    decomp.setEnabled(false);
-		    decomp.setMaximum(100);
-		    decomp.setMinimum(0);
-		    decomp.setValue(0);
+		    decompilingProgressBar.setEnabled(false);
+		    decompilingProgressBar.setMaximum(100);
+		    decompilingProgressBar.setMinimum(0);
+		    decompilingProgressBar.setValue(0);
 		    workBar.setEnabled(false);
 		    checkButton.setEnabled(true);
 		    checkMenuItem.setEnabled(true);
 		}
 	    }.start();
-	} else Logger.print("Scan cancelled!");
+	} else
+	    Logger.print("Scan cancelled!");
 
+    }
 
+    /**
+     * @param line
+     *            The line to add.
+     */
+    public void appendToLog(String line) {
+	log.append(line);
+    }
+
+    /**
+     * @param max
+     *            The maximum value for the progress bar
+     */
+    public void setProgressbarMax(int max) {
+	decompilingProgressBar.setMaximum(max);
+    }
+
+    /**
+     * @param value
+     *            The new value
+     */
+    public void setProgressbarValue(int value) {
+	decompilingProgressBar.setValue(value);
     }
 }
