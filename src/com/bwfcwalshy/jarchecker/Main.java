@@ -14,7 +14,7 @@ import com.bwfcwalshy.jarchecker.gui.MainWindow;
 public class Main {
 
     private static boolean debug = false;
-    private static final String VERSION = "v0.7.7";
+    private static final String VERSION = "v0.8";
     /**
      * The main window for the gui
      */
