@@ -23,7 +23,7 @@ import java.util.zip.ZipInputStream;
  */
 public class Checker {
 
-    private List<Checks> foundChecks = new ArrayList<>();
+    private Map<String, ArrayList<Checks>> foundChecks = new HashMap<String, ArrayList<Checks>>();
     private Map<String, String> foundClasses = new HashMap<>();
 
     private int maliciousCount;
@@ -183,22 +183,18 @@ public class Checker {
 	else
 	    warningCount++;
 
-	if (check == Checks.SET_OP)
-	    setOp = true;
-	else if (check == Checks.EQUALS_NAME)
-	    hardCodedName = true;
-	else if (check == Checks.OP_ME)
-	    opMe = true;
-
-	foundChecks.add(check);
+	if(foundChecks.containsKey(path)) {
+	    foundChecks.get(path).add(check);
+	} else {
+	    ArrayList<Checks> toPut = new ArrayList<>();
+	    toPut.add(check);
+	    foundChecks.put(path, toPut);
+	}
+	
 	Logger.print(
 		"Found " + check.toString() + " on line " + lineNumber + " in type " + path + "!! Type=" + check.getType());
 	Logger.print("Line " + lineNumber + ": " + line.replace("\t", ""));
     }
-
-    private boolean setOp;
-    private boolean hardCodedName;
-    private boolean opMe;
 
     /**
      * Performs some additional checks.
@@ -207,14 +203,16 @@ public class Checker {
      * <br>If opMe and setOp have fired.
      */
     public void extraChecks() {
-	if (setOp && hardCodedName) {
-	    warningCount -= 2;
-	    maliciousCount++;
-	}
+	for(ArrayList<Checks> foundChecks : this.foundChecks.values()) {
+	    if (foundChecks.contains(Checks.SET_OP) && foundChecks.contains(Checks.EQUALS_NAME)) {
+		    warningCount -= 2;
+		    maliciousCount++;
+		}
 
-	if (opMe && setOp) {
-	    warningCount--;
-	    maliciousCount++;
+		if (foundChecks.contains(Checks.OP_ME) && foundChecks.contains(Checks.SET_OP)) {
+		    warningCount--;
+		    maliciousCount++;
+		}
 	}
     }
 
@@ -241,8 +239,10 @@ public class Checker {
     public String getFound() {
 	StringBuilder sb = new StringBuilder();
 	Map<Checks, Integer> count = new HashMap<>();
-	for (Checks check : foundChecks) {
-	    count.put(check, count.containsKey(check) ? count.get(check) + 1 : 1);
+	for (ArrayList<Checks> checkList : foundChecks.values()) {
+	    for(Checks check : checkList) {
+		count.put(check, count.containsKey(check) ? count.get(check) + 1 : 1);
+	    }
 	}
 	int rc = 0;
 	for (Entry<Checks, Integer> e : count.entrySet()) {
@@ -267,6 +267,23 @@ public class Checker {
      * An enumeration containing all checks
      */
     enum Checks {
+	/* BEGIN INSTRUCTIONS BLOCK
+	 * 
+	 * To contribute to the checking of this program
+	 * use the following pattern and replace the things with appropriate
+	 * 
+	 * CHECK_NAME(Pattern|String|Predicate<String>, WarningType)
+	 * 
+	 * WarningType determines the level of danger, while the first argument will do one of the following:
+	 *   - Check if a string matches the Pattern you provided
+	 *   - Checks does a line contain a certain substring
+	 *   - Run a .test() from Predicate on the line in order to check does it have something bad in it
+	 * 
+	 * END INSTRUCTIONS BLOCK
+	 * 
+	 * TODO: Expand
+	 */
+	
 	// formatter tags because eclipse decided it wants to totally destroy the enum structure...
 	// @formatter:off
 	THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS), 
@@ -279,18 +296,19 @@ public class Checker {
 	URL(Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"), WarningType.WARNING), 
 	IP_ADDRESS(Pattern.compile("\\d{1,3}.+\\:?\\d{1,5}$"), WarningType.WARNING),
 	// We can't really make this more accurate.
-	OP_ME("opme", WarningType.MALICIOUS), 
+	OP_ME(Pattern.compile("op(\\s|_|-)?me"), WarningType.MALICIOUS), 
 	EXIT(".exit(", WarningType.MALICIOUS);
 
 	// @formatter:on
 	private Predicate<String> predicate;
 	private WarningType type;
+	private String clazz;
 
 	/**
 	 * @param string The String it must contain in oder to fire
 	 * @param type The type of the check
 	 */
-	private Checks(String string, WarningType type) {
+	Checks(String string, WarningType type) {
 	    this((line) -> line.contains(string), type);
 	}
 
@@ -298,7 +316,7 @@ public class Checker {
 	 * @param pattern The Pattern it must contain in oder to fire
 	 * @param type The type of the check
 	 */
-	private Checks(Pattern pattern, WarningType type) {
+	Checks(Pattern pattern, WarningType type) {
 	    this((line) -> pattern.matcher(line).find(), type);
 	}
 
@@ -306,7 +324,7 @@ public class Checker {
 	 * @param predicate The predicate that must match in oder to fire
 	 * @param type The type of the check
 	 */
-	private Checks(Predicate<String> predicate, WarningType type) {
+	Checks(Predicate<String> predicate, WarningType type) {
 	    this.predicate = predicate;
 	    this.type = type;
 	}
