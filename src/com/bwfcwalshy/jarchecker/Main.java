@@ -11,7 +11,7 @@ import com.bwfcwalshy.jarchecker.gui.MainWindow;
 public class Main {
 
     private static boolean debug = false;
-    private static final String VERSION = "v0.7.5";
+    private static final String VERSION = "v0.7.7";
     public static MainWindow mainWindow;
     public static boolean nogui = false;
     private static boolean nobar = false;
@@ -72,7 +72,7 @@ public class Main {
 		checker.check(new File(export.getAbsolutePath() + File.separator + f.getName()));
 	    }else{
 		Logger.error("Unable to decompile jar file!!");
-		System.exit(1);
+		if(nogui) System.exit(1);
 	    }
 	} else {
 	    checker.check(new File(path));
