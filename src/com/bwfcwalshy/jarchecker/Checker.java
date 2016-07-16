@@ -25,101 +25,126 @@ public class Checker {
 
     private int maliciousCount;
     private int warningCount;
-    public Checker(){
+
+    public Checker() {
 	maliciousCount = 0;
 	warningCount = 0;
     }
 
-    public void check(File jar){
-	ZipInputStream input = null;
-	ZipFile zip = null;
-	if(jar.getName().endsWith(".java")) {
+    public void check(File jarFile) {
+	ZipInputStream zipInput = null;
+	ZipFile zipFile = null;
+	if (jarFile.getName().endsWith(".java")) {
+	    // Its a source file
 	    try {
-		String className = jar.getName().substring(0, jar.getName().lastIndexOf('.'));
+		String className = jarFile.getName().substring(0, jarFile.getName().lastIndexOf('.'));
 		boolean suspicious = false;
 		String clazz = "";
-		int ln = 0;
-		for(String s : Files.readAllLines(jar.toPath())) {
-		    Map<Checks, Integer> result = checkLine(s, ++ln, className);
+		int lineNumber = 0;
+		for (String s : Files.readAllLines(jarFile.toPath())) {
+		    Map<Checks, Integer> result = checkLine(s, ++lineNumber, className);
 		    clazz += "\n";
-		    if(result.size() > 0){
+		    if (result.size() > 0) {
 			suspicious = true;
 			clazz += " // Here found: ";
 			int rc = 0;
-			for(Entry<Checks, Integer> c : result.entrySet()) {
+			for (Entry<Checks, Integer> c : result.entrySet()) {
 			    rc++;
 			    clazz += c.getKey().toString();
-			    if(rc < result.size()) clazz += ", ";
+			    if (rc < result.size())
+				clazz += ", ";
 			}
 		    }
 		    clazz += "\n";
 		}
-		if(suspicious) {
+		if (suspicious) {
 		    foundClasses.put(className, clazz);
 		}
 	    } catch (IOException e) {
 		Logger.error(e);
 	    }
 	} else
-	    try{
-		zip = new ZipFile(jar);
-		input = new ZipInputStream(new FileInputStream(jar));
+	    try {
+		// Its a Fernflower decompiled file
+		zipFile = new ZipFile(jarFile);
+		zipInput = new ZipInputStream(new FileInputStream(jarFile));
 		ZipEntry entry;
-		while((entry = input.getNextEntry()) != null){
+		// Loop through entries
+		while ((entry = zipInput.getNextEntry()) != null) {
+		    // Get the full class name (domain.website.project...)
 		    String className = entry.getName().replaceFirst("\\.java", "").replace('/', '.');
+		    // Marks the file as suspicious so it can be added to the source map
 		    boolean suspicious = false;
+		    // Stores classes source
 		    String clazz = "";
-		    if(entry.getName().endsWith(".java")){
-			InputStream zin = zip.getInputStream(entry);
-			InputStreamReader in = new InputStreamReader(zin);
-			BufferedReader br = new BufferedReader(in);
-			int ln = 0;
-			String line;
-			while((line = br.readLine()) != null){
-			    clazz += line;
-			    Map<Checks, Integer> result = checkLine(line, ++ln, className);
-			    if(result.size() > 0){
-				suspicious = true;
-				clazz += " // Here found: ";
-				int lc = 0;
-				for(Entry<Checks, Integer> c : result.entrySet()) {
-				    lc++;
-				    clazz += c.getKey().toString();
-				    if(lc < result.size()) clazz += ", ";
+		    // Is it a class?
+		    if (entry.getName().endsWith(".java")) {
+			// Try-with-resource block, to save us the closes
+			try (InputStream zin = zipFile.getInputStream(entry);
+				InputStreamReader in = new InputStreamReader(zin);
+				BufferedReader br = new BufferedReader(in);) {
+
+			    
+			    int lineNumber = 0;
+			    // Stores the current line
+			    String line;
+			    while ((line = br.readLine()) != null) {
+				// Adds the current line to the class
+				clazz += line;
+				// Finds all of the checks that are on this line
+				Map<Checks, Integer> result = checkLine(line, ++lineNumber, className);
+				// If it found anything
+				if (result.size() > 0) {
+				    // Mark the class as suspicious
+				    suspicious = true;
+				    // Mark what it found
+				    clazz += " // Here found: ";
+				    // Counts the amount of times the loop ran
+				    int lc = 0;
+				    for (Entry<Checks, Integer> c : result.entrySet()) {
+					// Increments the run counter
+					lc++;
+					// Adds the found check
+					clazz += c.getKey().toString();
+					// If it is not the last one add a comma and a space
+					if (lc < result.size())
+					    clazz += ", ";
+				    }
 				}
+				
+				// Newline 
+				clazz += "\n";
 			    }
 
-			    clazz += "\n";
 			}
-			zin.close();
-			in.close();
-			br.close();
 		    }
-		    if(suspicious) {
+		    // Stores the class in a foundClasses map
+		    if (suspicious) {
 			foundClasses.put(className, clazz);
 		    }
 		}
-	    }catch(IOException e){
+	    } catch (IOException e) {
 		Logger.error(e);
-	    }finally{
+	    } finally {
+		// Closes everything
 		try {
-		    if(input != null)
-			input.close();
+		    if (zipInput != null)
+			zipInput.close();
 
-		    if(zip != null)
-			zip.close();
-		}catch(IOException e){
+		    if (zipFile != null)
+			zipFile.close();
+		} catch (IOException e) {
 		    Logger.error(e);
 		}
 	    }
     }
 
     // Function improved upon a request by I Al Istannen
-    public Map<Checks, Integer> checkLine(String line, int ln, String className) {
+    public Map<Checks, Integer> checkLine(String line, int lineNumber, String className) {
 	Map<Checks, Integer> founds = new HashMap<>();
 	for (Checks check : Checks.values()) {
-	    if(check.matches(line)) {
-		found(check, ln, line, className);
+	    if (check.matches(line)) {
+		found(check, lineNumber, line, className);
 		founds.put(check, founds.containsKey(check) ? founds.get(check) + 1 : 1);
 	    }
 	}
@@ -127,34 +152,36 @@ public class Checker {
 	return founds;
     }
 
-    public void found(Checks check, int ln, String line, String path){
-	if(check.getType() == WarningType.MALICIOUS)
+    public void found(Checks check, int lineNumber, String line, String path) {
+	if (check.getType() == WarningType.MALICIOUS)
 	    maliciousCount++;
 	else
 	    warningCount++;
 
-	if(check == Checks.SET_OP)
+	if (check == Checks.SET_OP)
 	    setOp = true;
-	else if(check == Checks.EQUALS_NAME)
+	else if (check == Checks.EQUALS_NAME)
 	    hardCodedName = true;
-	else if(check == Checks.OP_ME)
+	else if (check == Checks.OP_ME)
 	    opMe = true;
 
 	foundChecks.add(check);
-	Logger.print("Found " + check.toString() + " on line " + ln + " in type " + path + "!! Type=" + check.getType());
-	Logger.print("Line " + ln + ": " + line.replace("\t", ""));
+	Logger.print(
+		"Found " + check.toString() + " on line " + lineNumber + " in type " + path + "!! Type=" + check.getType());
+	Logger.print("Line " + lineNumber + ": " + line.replace("\t", ""));
     }
 
     private boolean setOp;
     private boolean hardCodedName;
     private boolean opMe;
-    public void extraChecks(){
-	if(setOp && hardCodedName){
+
+    public void extraChecks() {
+	if (setOp && hardCodedName) {
 	    warningCount -= 2;
 	    maliciousCount++;
 	}
 
-	if(opMe && setOp){
+	if (opMe && setOp) {
 	    warningCount--;
 	    maliciousCount++;
 	}
@@ -171,43 +198,44 @@ public class Checker {
     public String getFound() {
 	StringBuilder sb = new StringBuilder();
 	Map<Checks, Integer> count = new HashMap<>();
-	for(Checks check : foundChecks){
-	    count.put(check, count.containsKey(check) ? count.get(check)+1 : 1);
+	for (Checks check : foundChecks) {
+	    count.put(check, count.containsKey(check) ? count.get(check) + 1 : 1);
 	}
 	int rc = 0;
-	for(Entry<Checks, Integer> e : count.entrySet()) {
+	for (Entry<Checks, Integer> e : count.entrySet()) {
 	    rc++;
 	    sb.append(e.getKey().toString());
-	    sb.append(" x"+e.getValue());
-	    if(rc < count.size()) sb.append("\n");
+	    sb.append(" x" + e.getValue());
+	    if (rc < count.size())
+		sb.append("\n");
 	}
 	return sb.toString();
     }
 
-    public Map<String, String> getSuspiciusClasses(){
+    public Map<String, String> getSuspiciusClasses() {
 	return foundClasses;
     }
 
     // Enum improved upon a request by I Al Istannen
     enum Checks {
-	THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS),
-	WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS),
-	RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS),
-	ENDLESS_LOOP(Pattern.compile("for\\((\\s*)?;(\\s*)?;(\\s*)?;(\\s*)?\\)"), WarningType.MALICIOUS),
-	SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"), WarningType.WARNING),
-	EQUALS_NAME(Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase)\\(\\\"[a-zA-Z0-9]+\\\"\\)"), WarningType.WARNING),
-	STAR_PERM(Pattern.compile("addPermission\\((\\s*)?\"\\*\""), WarningType.WARNING),
-	URL(Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"), WarningType.WARNING),
+	THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS), 
+	WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS), 
+	RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS), 
+	ENDLESS_LOOP(Pattern.compile("for\\((\\s*)?;(\\s*)?;(\\s*)?;(\\s*)?\\)"), WarningType.MALICIOUS), 
+	SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"), WarningType.WARNING), 
+	EQUALS_NAME(Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase)\\(\\\"[a-zA-Z0-9]+\\\"\\)"), WarningType.WARNING), 
+	STAR_PERM(Pattern.compile("addPermission\\((\\s*)?\"\\*\""), WarningType.WARNING), 
+	URL(Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"), WarningType.WARNING), 
 	IP_ADDRESS(Pattern.compile("\\d{1,3}.+\\:?\\d{1,5}$"), WarningType.WARNING),
 	// We can't really make this more accurate.
-	OP_ME("opme", WarningType.MALICIOUS),
+	OP_ME("opme", WarningType.MALICIOUS), 
 	EXIT(".exit(", WarningType.MALICIOUS);
 
 	private Predicate<String> predicate;
 	private WarningType type;
 
 	private Checks(String s, WarningType type) {
-	    this((line) -> line.contains(s), type);      
+	    this((line) -> line.contains(s), type);
 	}
 
 	private Checks(Pattern p, WarningType type) {
@@ -234,22 +262,21 @@ public class Checker {
     }
 
     enum WarningType {
-	WARNING,
-	MALICIOUS;
+	WARNING, MALICIOUS;
     }
 
     public String getWarningLevel() {
-	if(maliciousCount == 0 && warningCount == 0)
+	if (maliciousCount == 0 && warningCount == 0)
 	    return "not malicious";
-	else if((maliciousCount >= 1 && maliciousCount < 3)&& warningCount < 3)
+	else if ((maliciousCount >= 1 && maliciousCount < 3) && warningCount < 3)
 	    return "likely malicious";
-	else if(maliciousCount >= 1 && warningCount >= 3)
+	else if (maliciousCount >= 1 && warningCount >= 3)
 	    return "malicious";
-	else if(maliciousCount == 0 && warningCount > 3)
+	else if (maliciousCount == 0 && warningCount > 3)
 	    return "possibily malicious";
-	else if(maliciousCount == 0 && warningCount <= 3)
+	else if (maliciousCount == 0 && warningCount <= 3)
 	    return "probably not malicious";
-	else 
+	else
 	    return "Tell bwfcwalshy to add something here! " + maliciousCount + "," + warningCount;
     }
 
