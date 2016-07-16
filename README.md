@@ -7,6 +7,7 @@ JarChecker was created by bwfcwalshy with help and input from ArsenArsen and I A
 
 ## Prerequisites
 Java 8
+
 Frenflower compiled (See below)
 
 ## Build
@@ -14,8 +15,7 @@ Frenflower compiled (See below)
 To build download this, compile, and out it next to fernflower.jar built from https://github.com/fesh0r/fernflower
 
 ## Usage
-To use double click the jar to get the GUI
-Or run 
+To use double click the jar to get the GUI or run 
   ``java -jar JarChecker.jar <path | nogui>``
   
 Path should be put between "" if it has spaces.
