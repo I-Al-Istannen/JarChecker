@@ -2,6 +2,7 @@ package com.bwfcwalshy.jarchecker;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.zip.ZipException;
@@ -14,7 +15,7 @@ import com.bwfcwalshy.jarchecker.gui.MainWindow;
 public class Main {
 
     private static boolean debug = false;
-    private static final String VERSION = "v0.8";
+    private static final String VERSION = "v0.8.1";
     /**
      * The main window for the gui
      */
@@ -83,6 +84,10 @@ public class Main {
      * @return A Map with all the suspicious classes.
      */
     public static Map<String, String> decompilerStart(String path) {
+	if(!new File("fernflower.jar").exists()) {
+	    Logger.error("Fernflower jar not found!");
+	    return new HashMap<>(0);
+	}
 	Decompiler decompiler = new Decompiler();
 	File f = new File(path);
 	File export = new File(f.getName().replace(".jar", "") + "-src");

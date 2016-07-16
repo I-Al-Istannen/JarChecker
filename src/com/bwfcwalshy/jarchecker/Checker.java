@@ -310,20 +310,27 @@ public class Checker {
      * An enumeration containing all checks
      */
     enum Checks {
+	// formatter tags because eclipse decided it wants to totally destroy
+	// the enum structure... And the instructions
+	// @formatter:off
+	
 	/*
-	 * BEGIN INSTRUCTIONS BLOCK To contribute to the checking of this
+	 * BEGIN INSTRUCTIONS BLOCK 
+	 * 
+	 * To contribute to the checking of this
 	 * program use the following pattern and replace the things with
 	 * appropriate CHECK_NAME(Pattern|String|Predicate<String>, WarningType)
 	 * WarningType determines the level of danger, while the first argument
 	 * will do one of the following: - Check if a string matches the Pattern
 	 * you provided - Checks does a line contain a certain substring - Run a
 	 * .test() from Predicate on the line in order to check does it have
-	 * something bad in it END INSTRUCTIONS BLOCK TODO: Expand
+	 * something bad in it 
+	 * 
+	 * END INSTRUCTIONS BLOCK 
+	 * 
+	 * TODO: Expand
 	 */
 
-	// formatter tags because eclipse decided it wants to totally destroy
-	// the enum structure...
-	// @formatter:off
 	THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS), 
 	WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS), 
 	RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS), 
