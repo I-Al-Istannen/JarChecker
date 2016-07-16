@@ -26,7 +26,8 @@ public class SuspiciousClassDisplay extends JFrame {
     /**
      * Creates a new SuspiciousClassDisplay with the given classes.
      * 
-     * @param res The result map. Map format: (name),(path)
+     * @param res
+     *            The result map. Map format: (name),(path)
      */
     public SuspiciousClassDisplay(Map<String, String> res) {
 	setResizable(false);
