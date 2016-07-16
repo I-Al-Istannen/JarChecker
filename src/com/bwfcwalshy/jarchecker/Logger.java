@@ -23,6 +23,7 @@ public class Logger {
 
     public static void debug(String msg){
 	if(!Main.printDebug()) return;
+	msg += " (" + new Throwable().getStackTrace()[1] + ")";
 	String x = getTime() + " [DEBUG] "+ msg;
 	if(!Main.nogui) Main.mainWindow.log.append(x + "\n");
 	System.out.println(x);
