@@ -10,12 +10,22 @@ import com.bwfcwalshy.jarchecker.gui.MainWindow;
 
 public class Main {
 
-    private static final String VERSION = "v0.7";
-    public static MainWindow mw;
+    private static boolean debug = false;
+    private static final String VERSION = "v0.7.7";
+    public static MainWindow mainWindow;
     public static boolean nogui = false;
+    private static boolean nobar = false;
 
     public static void main(String[] args) throws ZipException, IOException {
-	if(args.length == 1) {
+	for(String s : args) {
+	    if(s.equalsIgnoreCase("--debug")) {
+		debug = true;
+	    }
+	    if(s.equalsIgnoreCase("--nobar")) {
+		nobar = true;
+	    }
+	}
+	if(args.length > 0 && !args[0].equalsIgnoreCase("--debug")) {
 	    nogui = true;
 	    String path;
 	    Scanner scanner = null;
@@ -33,7 +43,7 @@ public class Main {
 	    // GUI goes here
 	    MainWindow mw = new MainWindow();
 	    mw.setVisible(true);
-	    Main.mw = mw;
+	    Main.mainWindow = mw;
 	}
     }
 
@@ -45,28 +55,30 @@ public class Main {
 	Decompiler decompiler = new Decompiler();
 	File f = new File(path);
 	File export = new File(f.getName().replace(".jar", "") + "-src");
-	
+
 	if(!f.exists()) {
 	    Logger.error("The file " + f.getAbsolutePath() + " does not exist!");
 	    return null;
 	}
+	Logger.debug("Starting check of: " + f.getAbsolutePath());
 	boolean success = true;
 	Checker checker = new Checker();
+	try{Thread.sleep(100);}catch(Exception e){}
 	if(path.endsWith(".jar")) {
 	    Logger.print("Decompiling file.");
 	    success = decompiler.decompile(f, export);
 	    if(success){
-		    Logger.print("Decompiled jar file!");
-		    checker.check(new File(export.getAbsolutePath() + File.separator + f.getName()));
-		}else{
-		    Logger.error("Unable to decompile jar file!!");
-		    System.exit(1);
-		}
+		Logger.print("Decompiled jar file!");
+		checker.check(new File(export.getAbsolutePath() + File.separator + f.getName()));
+	    }else{
+		Logger.error("Unable to decompile jar file!!");
+		if(nogui) System.exit(1);
+	    }
 	} else {
 	    checker.check(new File(path));
 	}
-	
-	
+
+
 	Logger.print("-----------------------------------------------------");
 	Logger.printNoInfo("File name: " + f.getName());
 	Logger.emptyLine();
@@ -75,7 +87,19 @@ public class Main {
 	Logger.printNoInfo("Found: " + (checker.getFound().isEmpty() ? "Nothing!" : "\n" + checker.getFound()));
 	Logger.printNoInfo("Plugin is " + checker.getWarningLevel() + "!");
 	Logger.emptyLine();
-	
+
 	return checker.getSuspiciusClasses();
+    }
+
+    public static boolean printDebug() {
+	return debug;
+    }
+
+    public static void doDebug(boolean debug) {
+	Main.debug = debug;
+    }
+    
+    public static boolean printBar() {
+	return !nobar;
     }
 }
