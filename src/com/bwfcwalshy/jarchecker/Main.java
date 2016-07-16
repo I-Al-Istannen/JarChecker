@@ -12,7 +12,7 @@ public class Main {
 
     private static boolean debug = false;
     private static final String VERSION = "v0.7";
-    public static MainWindow mw;
+    public static MainWindow mainWindow;
     public static boolean nogui = false;
 
     public static void main(String[] args) throws ZipException, IOException {
@@ -39,7 +39,7 @@ public class Main {
 	    // GUI goes here
 	    MainWindow mw = new MainWindow();
 	    mw.setVisible(true);
-	    Main.mw = mw;
+	    Main.mainWindow = mw;
 	}
     }
 

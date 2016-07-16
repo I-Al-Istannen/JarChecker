@@ -12,25 +12,25 @@ public class Logger {
 
     public static void print(String msg){
 	String x = getTime() + " [INFO] " + msg;
-	if(!Main.nogui) Main.mw.log.append(x + "\n");
+	if(!Main.nogui) Main.mainWindow.log.append(x + "\n");
 	System.out.println(x);
     }
 
     public static void printNoInfo(String msg) {
 	System.out.println(msg);
-	if(!Main.nogui) Main.mw.log.append(msg + "\n");
+	if(!Main.nogui) Main.mainWindow.log.append(msg + "\n");
     }
 
     public static void debug(String msg){
 	if(!Main.printDebug()) return;
 	String x = getTime() + " [DEBUG] "+ msg;
-	if(!Main.nogui) Main.mw.log.append(x + "\n");
+	if(!Main.nogui) Main.mainWindow.log.append(x + "\n");
 	System.out.println(x);
     }
 
     public static void error(String msg){
 	String x = getTime() + " [ERROR] " + msg;
-	if(!Main.nogui) Main.mw.log.append(x + "\n");
+	if(!Main.nogui) Main.mainWindow.log.append(x + "\n");
 	System.err.println(x);
     }
 
@@ -49,7 +49,7 @@ public class Logger {
 
     public static void emptyLine() {
 	System.out.println();
-	if(!Main.nogui) Main.mw.log.append("\n");
+	if(!Main.nogui) Main.mainWindow.log.append("\n");
     }
 
     public static String getTime(){
