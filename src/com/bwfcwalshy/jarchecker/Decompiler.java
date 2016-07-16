@@ -52,7 +52,7 @@ public class Decompiler {
 	    from.close();
 	    // Sets the ProgressBar max to expected line count
 	    if(!Main.isNoGui()) 
-		Main.getMainWindow().decomp.setMaximum(endLineCount*2);
+		Main.getMainWindow().setProgressbarMax(endLineCount*2);
 	    // It says it needs to be final, I really do not see why
 	    final int finalEndLineCount = endLineCount;
 	    // Makes a listener thread
@@ -98,8 +98,8 @@ public class Decompiler {
 				}
 				// Sets the ProgressBar in nogui is false
 				if(!Main.isNoGui()) {
-				    Main.getMainWindow().decomp.setValue(currentLines);
-				} else if(!Main.printDebug() && Main.printBar()) {
+				    Main.getMainWindow().setProgressbarValue(currentLines);
+				} else if(!Main.isPrintDebug() && Main.isPrintBar()) {
 				    // Needs work on progress bar for console.
 				    float onePercent = ((float)(currentLines) / (float)(finalEndLineCount * 2));
 				    float percentage = onePercent * 100F;
