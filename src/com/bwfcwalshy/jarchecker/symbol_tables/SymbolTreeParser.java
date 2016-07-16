@@ -1,20 +1,15 @@
 package com.bwfcwalshy.jarchecker.symbol_tables;
 
+import static com.bwfcwalshy.jarchecker.symbol_tables.DefaultImports.simplifyName;
+
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
+
+import com.bwfcwalshy.jarchecker.Logger;
 
 /**
  * Creates a Symbol tree
@@ -66,14 +61,13 @@ public class SymbolTreeParser {
 	this.rootNode = new SymbolTableTree(null, 0);
 	this.sourceFile = sourceFile;
 	this.importMap.putAll(extraImports);
-
+	
+	for (DefaultImports defaultImports : DefaultImports.values()) {
+	    this.importMap.putAll(defaultImports.getImports());
+	}
+	
 	parseImports();
 	addThisJarImports();
-	try {
-	    addJavaLangImports();
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
     }
 
     /**
@@ -126,8 +120,8 @@ public class SymbolTreeParser {
 			currentPos += word.length();
 			continue;
 		    }
-		    System.out.println("Imported class found: " + word + " <" + varName + "> (" + importMap.get(word)
-			    + ") " + string);
+		    Logger.debug("Imported class found: " + word + " <" + varName + "> (" + importMap.get(word)
+		    + ") " + string);
 		    currentNode.getTable().setType(varName, importMap.get(word));
 		}
 		currentPos += word.length();
@@ -138,14 +132,17 @@ public class SymbolTreeParser {
 
 	rootNode.setLineEnd(lineCounter);
 
-	System.out.println();
+	Logger.debug("");
 	for (SymbolTableTree symbolTableTree : rootNode.getChildrenRecursive()) {
-	    System.out.println(symbolTableTree.getId() + " (" + symbolTableTree.getParent().get().getId() + ") <"
+	    Logger.debug(symbolTableTree.getId() + " (" + symbolTableTree.getParent().get().getId() + ") <"
 		    + symbolTableTree.getLineStart() + " - " + symbolTableTree.getLineEnd() + "> "
 		    + symbolTableTree.getTable());
 	}
     }
 
+    /**
+     * Parses the import section at the beginning of a java file.
+     */
     private void parseImports() {
 	for (String string : source.split(System.lineSeparator())) {
 	    if (string.startsWith("import")) {
@@ -154,89 +151,35 @@ public class SymbolTreeParser {
 	}
     }
 
+    /**
+     * Removes ";" and "import ", and puts it in the map, along with it's simplified name.
+     * 
+     * @param string The string to add
+     */
     private void addImport(String string) {
 	string = string.replace("import ", "");
 	string = string.replace(";", "");
 	importMap.put(simplifyName(string), string);
     }
-
-    private void addJavaLangImports() throws IOException {
-	String rtJarPath = System.getProperty("sun.boot.class.path");
-	rtJarPath = Arrays.stream(rtJarPath.split(";")).filter(string -> string.endsWith("rt.jar")).findAny().get();
-	addImportsFromJar(new File(rtJarPath), entry -> {
-	    return entry.getName().contains("java/lang") && entry.getName().split("/").length == 3
-		    && !entry.getName().contains("$");
-	});
-    }
-
+    
+    
     /**
-     * @param file
-     *            The file to read from
-     * @param filter
-     *            The filter the files must match
+     * Adds all the classes in this jar as imports
      */
-    private void addImportsFromJar(File file, Predicate<ZipEntry> filter) {
-	if (!file.getAbsolutePath().endsWith(".jar")) {
-	    return;
-	}
-	try (JarFile jarFile = new JarFile(file)) {
-
-	    Enumeration<JarEntry> entries = jarFile.entries();
-
-	    while (entries.hasMoreElements()) {
-		ZipEntry entry = entries.nextElement();
-		if (!filter.test(entry)) {
-		    continue;
-		}
-		addImport(entry.getName().replace("/", ".").replace(".class", ""));
-	    }
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-    }
-
     private void addThisJarImports() {
 	if (!sourceFile.getAbsolutePath().endsWith(".jar")) {
 	    return;
 	}
-	addImportsFromJar(sourceFile, entry -> {
+	DefaultImports.getImportsFromJar(sourceFile, entry -> {
 	    return !(entry.getName().contains("$") || !entry.getName().endsWith(".class"));
-	});
+	}).stream().forEach(this::addImport);
     }
 
-    private String simplifyName(String fullyQualified) {
-	fullyQualified = fullyQualified.replace(";", "");
-	return fullyQualified.substring(fullyQualified.lastIndexOf(".") + 1);
-    }
 
     /**
      * @return The root node
      */
     public SymbolTableTree getRootNode() {
 	return rootNode;
-    }
-
-    /**
-     * Just for testing. We need to somehow give him ALL the bukkit/spigot
-     * imports, so it can correctly resolve those. Maybe in an external file?
-     * 
-     * @param args
-     *            The arguments passed
-     * @throws IOException
-     *             If an IO error occured
-     */
-    public static void main(String[] args) throws IOException {
-	File file = new File("src/com/bwfcwalshy/jarchecker/symbol_tables/TestFileTwo.java");
-	String source = Files.readAllLines(file.toPath()).stream().collect(Collectors.joining(System.lineSeparator()));
-
-	SymbolTreeParser parser = new SymbolTreeParser(source, new File("C:/Users/Julian/Desktop/JarChecker2.jar"));
-
-	parser.addImportsFromJar(new File("S:/Minecraft/Bukkit Server/Bukkit 1.8.8/spigot-1.8.8.jar"), entry -> {
-	    return !(entry.getName().contains("$") || !entry.getName().endsWith(".class"));
-	});
-
-	parser.parse();
-
-	System.out.println(parser.getRootNode().getFullyQualifiedType(65, "meta"));
     }
 }
