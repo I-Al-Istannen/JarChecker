@@ -8,14 +8,21 @@ import java.util.zip.ZipException;
 
 import com.bwfcwalshy.jarchecker.gui.MainWindow;
 
+/**
+ * The main class.
+ */
 public class Main {
 
     private static boolean debug = false;
     private static final String VERSION = "v0.7.7";
-    public static MainWindow mainWindow;
-    public static boolean nogui = false;
+    /**
+     * The main window for the gui
+     */
+    private static MainWindow mainWindow;
+    private static boolean nogui = false;
     private static boolean nobar = false;
 
+    @SuppressWarnings("javadoc")
     public static void main(String[] args) throws ZipException, IOException {
 	for(String s : args) {
 	    if(s.equalsIgnoreCase("--debug")) {
@@ -47,10 +54,33 @@ public class Main {
 	}
     }
 
+    /**
+     * @return True if it should't show the gui
+     */
+    public static boolean isNoGui() {
+	return nogui;
+    }
+
+    /**
+     * @return The main window for the Gui or null if {@link #isNoGui()} is true
+     */
+    public static MainWindow getMainWindow() {
+	return mainWindow;
+    }
+
+    /**
+     * @return The version of this program
+     */
     public static String getVersion() {
 	return VERSION;
     }
 
+    /**
+     * Decompiles and checks the plugin. Returns the findings
+     * 
+     * @param path The Path of the file to decompile 
+     * @return A Map with all the suspicious classes.
+     */
     public static Map<String, String> decompilerStart(String path) {
 	Decompiler decompiler = new Decompiler();
 	File f = new File(path);
@@ -98,7 +128,7 @@ public class Main {
     public static void doDebug(boolean debug) {
 	Main.debug = debug;
     }
-    
+
     public static boolean printBar() {
 	return !nobar;
     }

@@ -24,11 +24,11 @@ import com.bwfcwalshy.jarchecker.Main;
 import javax.swing.JProgressBar;
 import javax.swing.JCheckBox;
 
+/**
+ * The main window for the GUI
+ */
 public class MainWindow extends JFrame {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -3819423569120370386L;
     private final MainWindow inst = this;
     private JButton check;
@@ -38,6 +38,9 @@ public class MainWindow extends JFrame {
     private Map<String, String> res;
     public JProgressBar decomp;
 
+    /**
+     * A new instance with the default parameters
+     */
     public MainWindow() {
 	try {
 	    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -143,7 +146,13 @@ public class MainWindow extends JFrame {
 	getContentPane().add(decomp);
     }
 
-    private void begin(JButton jb, JMenuItem jmi, JButton showSource, JProgressBar work) {
+    /**
+     * @param checkButton The check button. Will be disabled while it decompiles.
+     * @param checkMenuItem The same just with the menu item
+     * @param showSourceButton The showSource button
+     * @param workBar Shows the decompilation process
+     */
+    private void begin(JButton checkButton, JMenuItem checkMenuItem, JButton showSourceButton, JProgressBar workBar) {
 
 	JFileChooser fc = new JFileChooser();
 	fc.setAcceptAllFileFilterUsed(false);
@@ -183,23 +192,23 @@ public class MainWindow extends JFrame {
 	    Logger.print("Beginning scan of " + fc.getSelectedFile().getAbsolutePath());
 	    new Thread("Scan") {
 		public void run() {
-		    jb.setEnabled(false);
+		    checkButton.setEnabled(false);
 		    decomp.setEnabled(true);
-		    jmi.setEnabled(false);
-		    showSource.setEnabled(false);
-		    work.setEnabled(true);
-		    work.setIndeterminate(true);
+		    checkMenuItem.setEnabled(false);
+		    showSourceButton.setEnabled(false);
+		    workBar.setEnabled(true);
+		    workBar.setIndeterminate(true);
 		    res = Main.decompilerStart(fc.getSelectedFile().getAbsolutePath());
 		    if(res != null && res.size() > 0) 
-			showSource.setEnabled(true);
-		    work.setIndeterminate(false);
+			showSourceButton.setEnabled(true);
+		    workBar.setIndeterminate(false);
 		    decomp.setEnabled(false);
 		    decomp.setMaximum(100);
 		    decomp.setMinimum(0);
 		    decomp.setValue(0);
-		    work.setEnabled(false);
-		    jb.setEnabled(true);
-		    jmi.setEnabled(true);
+		    workBar.setEnabled(false);
+		    checkButton.setEnabled(true);
+		    checkMenuItem.setEnabled(true);
 		}
 	    }.start();
 	} else Logger.print("Scan cancelled!");

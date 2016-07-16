@@ -11,8 +11,16 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+/**
+ * Decompiles the plugin using a Fernflower jar named "fernflower.jar" in the same directory.
+ */
 public class Decompiler {
 
+    /**
+     * @param f The File to decompile
+     * @param export The file to export it to
+     * @return True if it could be decompiled
+     */
     public boolean decompile(File f, File export){
 	if(!export.exists())
 	    export.mkdir();
@@ -43,8 +51,8 @@ public class Decompiler {
 	    // Closes the ZipFile
 	    from.close();
 	    // Sets the ProgressBar max to expected line count
-	    if(!Main.nogui) 
-		Main.mainWindow.decomp.setMaximum(endLineCount*2);
+	    if(!Main.isNoGui()) 
+		Main.getMainWindow().decomp.setMaximum(endLineCount*2);
 	    // It says it needs to be final, I really do not see why
 	    final int finalEndLineCount = endLineCount;
 	    // Makes a listener thread
@@ -89,8 +97,8 @@ public class Decompiler {
 				    return;
 				}
 				// Sets the ProgressBar in nogui is false
-				if(!Main.nogui) {
-				    Main.mainWindow.decomp.setValue(currentLines);
+				if(!Main.isNoGui()) {
+				    Main.getMainWindow().decomp.setValue(currentLines);
 				} else if(!Main.printDebug() && Main.printBar()) {
 				    // Needs work on progress bar for console.
 				    float onePercent = ((float)(currentLines) / (float)(finalEndLineCount * 2));

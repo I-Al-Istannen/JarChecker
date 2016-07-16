@@ -18,6 +18,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+/**
+ * Checks the jar file for malicious content
+ */
 public class Checker {
 
     private List<Checks> foundChecks = new ArrayList<>();
@@ -26,11 +29,21 @@ public class Checker {
     private int maliciousCount;
     private int warningCount;
 
+    /**
+     * Creates a new Checker...
+     */
     public Checker() {
 	maliciousCount = 0;
 	warningCount = 0;
     }
 
+    /**
+     * TODO: Cleanup
+     *  
+     * Checks the file. If it is a .java file, it will be checked. Otherwise it will be assumed it is a .jar file...
+     * 
+     * @param jar The File to check
+     */
     public void check(File jarFile) {
 	ZipInputStream zipInput = null;
 	ZipFile zipFile = null;
@@ -84,7 +97,7 @@ public class Checker {
 				InputStreamReader in = new InputStreamReader(zin);
 				BufferedReader br = new BufferedReader(in);) {
 
-			    
+
 			    int lineNumber = 0;
 			    // Stores the current line
 			    String line;
@@ -111,7 +124,7 @@ public class Checker {
 					    clazz += ", ";
 				    }
 				}
-				
+
 				// Newline 
 				clazz += "\n";
 			    }
@@ -140,6 +153,12 @@ public class Checker {
     }
 
     // Function improved upon a request by I Al Istannen
+    /**
+     * @param line The line which is being checked
+     * @param ln The line number
+     * @param className The name of the class the line is in
+     * @return A map with all the findings. Key is the check type, value the amount of times it occurred.
+     */
     public Map<Checks, Integer> checkLine(String line, int lineNumber, String className) {
 	Map<Checks, Integer> founds = new HashMap<>();
 	for (Checks check : Checks.values()) {
@@ -152,6 +171,12 @@ public class Checker {
 	return founds;
     }
 
+    /**
+     * @param check The Check that fired
+     * @param line The line it was in
+     * @param ln The line number
+     * @param path The path of the file
+     */
     public void found(Checks check, int lineNumber, String line, String path) {
 	if (check.getType() == WarningType.MALICIOUS)
 	    maliciousCount++;
@@ -175,6 +200,12 @@ public class Checker {
     private boolean hardCodedName;
     private boolean opMe;
 
+    /**
+     * Performs some additional checks.
+     * <br>Currently:
+     * <br>If both, setOp and hardCodedName have fired
+     * <br>If opMe and setOp have fired.
+     */
     public void extraChecks() {
 	if (setOp && hardCodedName) {
 	    warningCount -= 2;
@@ -187,14 +218,26 @@ public class Checker {
 	}
     }
 
+    /**
+     * @return The amount of malicious content
+     */
     public int getMaliciousCount() {
 	return maliciousCount;
     }
 
+    /**
+     * @return The amount of warnings it found
+     */
     public int getWarningCount() {
 	return warningCount;
     }
 
+    /**
+     * <b>Format:</b>
+     * <br>"[Check type] x[amount of times it occurred]" (e.g. "URL x2")
+     * 
+     * @return A String with all the found checks.
+     */
     public String getFound() {
 	StringBuilder sb = new StringBuilder();
 	Map<Checks, Integer> count = new HashMap<>();
@@ -212,12 +255,20 @@ public class Checker {
 	return sb.toString();
     }
 
+    /**
+     * @return A map with all the suspicious classes. (class name),(class path)
+     */
     public Map<String, String> getSuspiciusClasses() {
 	return foundClasses;
     }
 
     // Enum improved upon a request by I Al Istannen
+    /**
+     * An enumeration containing all checks
+     */
     enum Checks {
+	// formatter tags because eclipse decided it wants to totally destroy the enum structure...
+	// @formatter:off
 	THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS), 
 	WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS), 
 	RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS), 
@@ -231,17 +282,30 @@ public class Checker {
 	OP_ME("opme", WarningType.MALICIOUS), 
 	EXIT(".exit(", WarningType.MALICIOUS);
 
+	// @formatter:on
 	private Predicate<String> predicate;
 	private WarningType type;
 
-	private Checks(String s, WarningType type) {
-	    this((line) -> line.contains(s), type);
+	/**
+	 * @param string The String it must contain in oder to fire
+	 * @param type The type of the check
+	 */
+	private Checks(String string, WarningType type) {
+	    this((line) -> line.contains(string), type);
 	}
 
-	private Checks(Pattern p, WarningType type) {
-	    this((line) -> p.matcher(line).find(), type);
+	/**
+	 * @param pattern The Pattern it must contain in oder to fire
+	 * @param type The type of the check
+	 */
+	private Checks(Pattern pattern, WarningType type) {
+	    this((line) -> pattern.matcher(line).find(), type);
 	}
 
+	/**
+	 * @param predicate The predicate that must match in oder to fire
+	 * @param type The type of the check
+	 */
 	private Checks(Predicate<String> predicate, WarningType type) {
 	    this.predicate = predicate;
 	    this.type = type;
@@ -252,10 +316,17 @@ public class Checker {
 	    return super.toString().charAt(0) + super.toString().substring(1).replace("_", "").toLowerCase();
 	}
 
+	/**
+	 * @param input The input to check
+	 * @return True if this check fires for the input
+	 */
 	public boolean matches(String input) {
 	    return predicate.test(input);
 	}
 
+	/**
+	 * @return The type of the check
+	 */
 	public WarningType getType() {
 	    return type;
 	}
@@ -265,6 +336,11 @@ public class Checker {
 	WARNING, MALICIOUS;
     }
 
+    /**
+     * Notes how likely the plugin is malicious. Has some categories, look at it :P
+     * 
+     * @return The warning level.
+     */
     public String getWarningLevel() {
 	if (maliciousCount == 0 && warningCount == 0)
 	    return "not malicious";

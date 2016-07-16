@@ -10,8 +10,14 @@ import javax.swing.JTextPane;
 
 import com.bwfcwalshy.jarchecker.Main;
 
+/**
+ * Window showing information about this program
+ */
 public class AboutWindow extends JFrame {
 
+    /**
+     * Initializes the default About Window.
+     */
     public AboutWindow() {
 	setResizable(false);
 	setBounds(200, 200, 351, 192);
