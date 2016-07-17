@@ -234,24 +234,21 @@ public class MainWindow extends JFrame {
     }
 
     /**
-     * @param line
-     *            The line to add.
+     * @param line The line to add.
      */
     public void appendToLog(String line) {
 	log.append(line);
     }
 
     /**
-     * @param max
-     *            The maximum value for the progress bar
+     * @param max The maximum value for the progress bar
      */
     public void setProgressbarMax(int max) {
 	decompilingProgressBar.setMaximum(max);
     }
 
     /**
-     * @param value
-     *            The new value
+     * @param value The new value
      */
     public void setProgressbarValue(int value) {
 	decompilingProgressBar.setValue(value);

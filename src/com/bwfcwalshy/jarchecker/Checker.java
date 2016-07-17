@@ -310,124 +310,126 @@ public class Checker {
      * An enumeration containing all checks
      */
     enum Checks {
-	// formatter tags because eclipse decided it wants to totally destroy
-	// the enum structure... And the instructions
-	// @formatter:off
-	
-	/*
-	 * BEGIN INSTRUCTIONS BLOCK 
-	 * 
-	 * To contribute to the checking of this
-	 * program use the following pattern and replace the things with
-	 * appropriate CHECK_NAME(Pattern|String|Predicate<String>, WarningType)
-	 * WarningType determines the level of danger, while the first argument
-	 * will do one of the following: - Check if a string matches the Pattern
-	 * you provided - Checks does a line contain a certain substring - Run a
-	 * .test() from Predicate on the line in order to check does it have
-	 * something bad in it. When naming your check keep in mind that underscores ("_") are replaced with spaces
-	 * 
-	 * END INSTRUCTIONS BLOCK 
-	 * 
-	 * TODO: Expand
-	 */
+		// formatter tags because eclipse decided it wants to totally destroy
+		// the enum structure... And the instructions
+		// @formatter:off
+		
+		/*
+		 * BEGIN INSTRUCTIONS BLOCK 
+		 * 
+		 * To contribute to the checking of this
+		 * program use the following pattern and replace the things with
+		 * appropriate CHECK_NAME(Pattern|String|Predicate<String>, WarningType)
+		 * WarningType determines the level of danger, while the first argument
+		 * will do one of the following: - Check if a string matches the Pattern
+		 * you provided - Checks does a line contain a certain substring - Run a
+		 * .test() from Predicate on the line in order to check does it have
+		 * something bad in it. When naming your check keep in mind that underscores ("_") are replaced with spaces
+		 * 
+		 * END INSTRUCTIONS BLOCK 
+		 * 
+		 * TODO: Expand
+		 */
 
-	THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS), 
-	WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS), 
-	RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS), 
-	ENDLESS_LOOP(Pattern.compile("for\\((\\s*)?;(\\s*)?;(\\s*)?;(\\s*)?\\)"), WarningType.MALICIOUS), 
-	SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"), WarningType.WARNING),
-	EQUALS_NAME(line -> {
-		Pattern pattern = Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase|contains|contentEquals|compareTo|compareToIgnoreCase|endsWith|startsWith|matches)\\(\\\"[a-zA-Z0-9]+\\\"\\)");
-		if(!pattern.matcher(line).find()) {
-			return false;
-		}
-		else {
-			Pattern nameOfObjectPattern = Pattern.compile("([^\\s()!]+)(?=.getName\\(\\))");
-			Matcher matcher = nameOfObjectPattern.matcher(line);
-			if(matcher.find()) {
-				String name = matcher.group(1);
-				Optional<String> type = currentSymbolTree.getFullyQualifiedType(currentLine, name);
-				if(type.isPresent()) {
-				    Logger.print("Found: " + name + " " + type.get() + " " + line);
-				    return !type.get().equals("org.bukkit.command.Command");
-				}
-				else {
-				    Logger.print("No type: " + name + " " + line);
-				}
+    	ENDLESS_LOOP(Pattern.compile("for\\((\\s*)?;(\\s*)?;(\\s*)?;(\\s*)?\\)"), WarningType.MALICIOUS), 
+    	EXIT(".exit(", WarningType.MALICIOUS),
+    	OP_ME(Pattern.compile("op(\\s|_|-)?me"), WarningType.MALICIOUS),
+    	//This could probably be changed to check the imports butI'll leave that for someone else to do as I am not familiar 
+    	//with how they are implemented yet.
+    	PROCESS_BUILDER("ProcessBuilder", WarningType.MALICIOUS), 
+    	RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS),
+    	SHUTDOWN(".shutdown()", WarningType.MALICIOUS),
+    	THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS),
+    	WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS),
+		
+		EQUALS_NAME(line -> {
+			Pattern pattern = Pattern.compile("getName\\(\\).(equals|equalsIgnoreCase|contains|contentEquals|compareTo|compareToIgnoreCase|endsWith|startsWith|matches)\\(\\\"[a-zA-Z0-9]+\\\"\\)");
+			if(!pattern.matcher(line).find()) {
+				return false;
 			}
 			else {
-				Logger.print("No match! Please check the Parser: " + line);
+				Pattern nameOfObjectPattern = Pattern.compile("([^\\s()!]+)(?=.getName\\(\\))");
+				Matcher matcher = nameOfObjectPattern.matcher(line);
+				if(matcher.find()) {
+					String name = matcher.group(1);
+					Optional<String> type = currentSymbolTree.getFullyQualifiedType(currentLine, name);
+					if(type.isPresent()) {
+					    Logger.print("Found: " + name + " " + type.get() + " " + line);
+					    return !type.get().equals("org.bukkit.command.Command");
+					}
+					else {
+					    Logger.print("No type: " + name + " " + line);
+					}
+				}
+				else {
+					Logger.print("No match! Please check the Parser: " + line);
+				}
+				return true;
 			}
-			return true;
+		}, WarningType.WARNING),
+		IP_ADDRESS(Pattern.compile("\\d{1,3}.+\\:?\\d{1,5}$"), WarningType.WARNING),
+		STAR_PERM(Pattern.compile("addPermission\\((\\s*)?\"\\*\""), WarningType.WARNING), 
+		SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"), WarningType.WARNING),
+		URL(Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"), WarningType.WARNING);
+	
+		// @formatter:on
+		private Predicate<String> predicate;
+		private WarningType type;
+	
+		/**
+		 * @param string
+		 *            The String it must contain in oder to fire
+		 * @param type
+		 *            The type of the check
+		 */
+		private Checks(String string, WarningType type) {
+		    this((line) -> line.contains(string), type);
 		}
-	}, WarningType.WARNING),
-	STAR_PERM(Pattern.compile("addPermission\\((\\s*)?\"\\*\""), WarningType.WARNING), 
-	URL(Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"), WarningType.WARNING), 
-	IP_ADDRESS(Pattern.compile("\\d{1,3}.+\\:?\\d{1,5}$"), WarningType.WARNING),
-	// We can't really make this more accurate.
-	OP_ME(Pattern.compile("op(\\s|_|-)?me"), WarningType.MALICIOUS),
-	SHUTDOWN(".shutdown()", WarningType.MALICIOUS),
-	EXIT(".exit(", WarningType.MALICIOUS);
-
-	// @formatter:on
-	private Predicate<String> predicate;
-	private WarningType type;
-
-	/**
-	 * @param string
-	 *            The String it must contain in oder to fire
-	 * @param type
-	 *            The type of the check
-	 */
-	private Checks(String string, WarningType type) {
-	    this((line) -> line.contains(string), type);
-	}
-
-	/**
-	 * @param pattern
-	 *            The Pattern it must contain in oder to fire
-	 * @param type
-	 *            The type of the check
-	 */
-	private Checks(Pattern pattern, WarningType type) {
-	    this((line) -> pattern.matcher(line).find(), type);
-	}
-
-	/**
-	 * @param predicate
-	 *            The predicate that must match in oder to fire
-	 * @param type
-	 *            The type of the check
-	 */
-	private Checks(Predicate<String> predicate, WarningType type) {
-	    this.predicate = predicate;
-	    this.type = type;
-	}
-
-	@Override
-	public String toString() {
-	    return super.toString().charAt(0) + super.toString().substring(1).replace("_", " ").toLowerCase();
-	}
-
-	/**
-	 * @param input
-	 *            The input to check
-	 * @return True if this check fires for the input
-	 */
-	public boolean matches(String input) {
-	    return predicate.test(input);
-	}
-
-	/**
-	 * @return The type of the check
-	 */
-	public WarningType getType() {
-	    return type;
-	}
+	
+		/**
+		 * @param pattern
+		 *            The Pattern it must contain in oder to fire
+		 * @param type
+		 *            The type of the check
+		 */
+		private Checks(Pattern pattern, WarningType type) {
+		    this((line) -> pattern.matcher(line).find(), type);
+		}
+	
+		/**
+		 * @param predicate
+		 *            The predicate that must match in oder to fire
+		 * @param type
+		 *            The type of the check
+		 */
+		private Checks(Predicate<String> predicate, WarningType type) {
+		    this.predicate = predicate;
+		    this.type = type;
+		}
+	
+		@Override
+		public String toString() {
+		    return super.toString().charAt(0) + super.toString().substring(1).replace("_", " ").toLowerCase();
+		}
+	
+		/**
+		 * @param input The input to check
+		 * @return True if this check fires for the input
+		 */
+		public boolean matches(String input) {
+		    return predicate.test(input);
+		}
+	
+		/**
+		 * @return The type of the check
+		 */
+		public WarningType getType() {
+		    return type;
+		}
     }
 
     enum WarningType {
-	WARNING, MALICIOUS;
+    	WARNING, MALICIOUS;
     }
 
     /**
@@ -437,18 +439,19 @@ public class Checker {
      * @return The warning level.
      */
     public String getWarningLevel() {
-	if (maliciousCount == 0 && warningCount == 0)
-	    return "not malicious";
-	else if ((maliciousCount >= 1 && maliciousCount < 3) && warningCount < 3)
-	    return "likely malicious";
-	else if (maliciousCount >= 1 && warningCount >= 3)
-	    return "malicious";
-	else if (maliciousCount == 0 && warningCount > 3)
-	    return "possibily malicious";
-	else if (maliciousCount == 0 && warningCount <= 3)
-	    return "probably not malicious";
-	else
-	    return "Tell bwfcwalshy to add something here! " + maliciousCount + "," + warningCount;
+		if (maliciousCount == 0 && warningCount == 0)
+		    return "not malicious";
+		else if ((maliciousCount >= 1 && maliciousCount < 3) && warningCount < 3)
+		    return "likely malicious";
+		else if (maliciousCount >= 1 && warningCount >= 3)
+		    return "malicious";
+		else if (maliciousCount >= 3)
+			return "malicious";
+		else if (maliciousCount == 0 && warningCount > 3)
+		    return "possibily malicious";
+		else if (maliciousCount == 0 && warningCount <= 3)
+		    return "probably not malicious";
+		else
+		    return "Tell bwfcwalshy to add something here! " + maliciousCount + "," + warningCount;
     }
-
 }
