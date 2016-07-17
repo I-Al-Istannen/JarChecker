@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -30,14 +29,14 @@ public class Main {
 	 * The main window for the gui
 	 */
 	private static MainWindow mainWindow;
-	public static File WORKING_DIR;
-	public static File FERNFLOWER;
+	private static final File WORKING_DIR;
+	private static final File FERNFLOWER;
 	private static boolean nogui = false;
 	private static boolean nobar = false;
 	private static List<String> keywords = new ArrayList<>();
 
-	@SuppressWarnings("javadoc")
-	public static void main(String[] args) throws ZipException, IOException {
+	// intialize the static constants
+	static {
 		// Obtain the data folder
 		String OS = System.getProperty("os.name").toUpperCase();
 		if (OS.contains("WIN"))
@@ -51,6 +50,11 @@ public class Main {
 			WORKING_DIR = new File(System.getProperty("user.home") + File.separator + ".JarChecker");
 		WORKING_DIR.mkdirs();
 		FERNFLOWER = new File(WORKING_DIR, "fernflower.jar");
+	}
+
+	@SuppressWarnings("javadoc")
+	public static void main(String[] args) throws ZipException, IOException {
+		
 		
 		keywords.add("--debug");
 		keywords.add("--nobar");
@@ -99,7 +103,7 @@ public class Main {
 		
 		if(!FERNFLOWER.exists()) {
 			Logger.print("Downloading fernflower!");
-			final Path target = FERNFLOWER.toPath();
+			final Path target = getFernflowerFile().toPath();
 			try {
 				final InputStream fromInternet = new URI("https://dl.dropboxusercontent.com/s/b9cna8hproe2smg/fernflower.jar?dl=0").toURL().openStream();
 				new Thread(new Runnable() {
@@ -145,6 +149,20 @@ public class Main {
 	public static String getVersion() {
 		return VERSION;
 	}
+	
+	/**
+	 * @return The working dir
+	 */
+	public static File getWorkingDirectory() {
+		return WORKING_DIR;
+	}
+	
+	/**
+	 * @return The location of the fernflower jar
+	 */
+	public static File getFernflowerFile() {
+		return FERNFLOWER;
+	}
 
 	/**
 	 * Decompiles and checks the plugin. Returns the findings
@@ -156,7 +174,7 @@ public class Main {
 	public static Map<String, String> decompilerStart(String path) {
 		Decompiler decompiler = new Decompiler();
 		File f = new File(path);
-		File export = new File(WORKING_DIR, f.getName().replace(".jar", "") + "-src");
+		File export = new File(getWorkingDirectory(), f.getName().replace(".jar", "") + "-src");
 
 		if (!f.exists()) {
 			Logger.error("The file " + f.getAbsolutePath() + " does not exist!");
