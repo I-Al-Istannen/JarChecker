@@ -61,11 +61,11 @@ public class SymbolTreeParser {
 	this.rootNode = new SymbolTableTree(null, 0);
 	this.sourceFile = sourceFile;
 	this.importMap.putAll(extraImports);
-	
+
 	for (DefaultImports defaultImports : DefaultImports.values()) {
 	    this.importMap.putAll(defaultImports.getImports());
 	}
-	
+
 	parseImports();
 	addThisJarImports();
     }
@@ -120,8 +120,8 @@ public class SymbolTreeParser {
 			currentPos += word.length();
 			continue;
 		    }
-		    Logger.debug("Imported class found: " + word + " <" + varName + "> (" + importMap.get(word)
-		    + ") " + string);
+		    Logger.debug("Imported class found: " + word + " <" + varName + "> (" + importMap.get(word) + ") "
+			    + string);
 		    currentNode.getTable().setType(varName, importMap.get(word));
 		}
 		currentPos += word.length();
@@ -152,17 +152,18 @@ public class SymbolTreeParser {
     }
 
     /**
-     * Removes ";" and "import ", and puts it in the map, along with it's simplified name.
+     * Removes ";" and "import ", and puts it in the map, along with it's
+     * simplified name.
      * 
-     * @param string The string to add
+     * @param string
+     *            The string to add
      */
     private void addImport(String string) {
 	string = string.replace("import ", "");
 	string = string.replace(";", "");
 	importMap.put(simplifyName(string), string);
     }
-    
-    
+
     /**
      * Adds all the classes in this jar as imports
      */
@@ -174,7 +175,6 @@ public class SymbolTreeParser {
 	    return !(entry.getName().contains("$") || !entry.getName().endsWith(".class"));
 	}).stream().forEach(this::addImport);
     }
-
 
     /**
      * @return The root node

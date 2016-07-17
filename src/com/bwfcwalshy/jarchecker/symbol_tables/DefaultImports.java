@@ -36,22 +36,21 @@ public enum DefaultImports {
 	return DefaultImports.getImportsFromJar(new File(rtJarPath), entry -> {
 	    return entry.getName().contains("java/lang") && entry.getName().split("/").length == 3
 		    && !entry.getName().contains("$");
-	}).stream()
-		.map(fullyQualified -> fullyQualified + "=" + simplifyName(fullyQualified))
+	}).stream().map(fullyQualified -> fullyQualified + "=" + simplifyName(fullyQualified))
 		.collect(Collectors.toMap(string -> string.split("=")[1], string -> string.split("=")[0]));
     }),
     /**
      * All the imports from the supplied "bukkit-imports-joined.txt" file.
      */
     BUKKIT(() -> {
-	try(InputStream stream = DefaultImports.class.getResourceAsStream("bukkit-imports-joined.txt");
+	try (InputStream stream = DefaultImports.class.getResourceAsStream("bukkit-imports-joined.txt");
 		InputStreamReader inR = new InputStreamReader(stream);
 		BufferedReader reader = new BufferedReader(inR);) {
-	    
+
 	    String tmp;
 	    Map<String, String> map = new HashMap<>();
-	    while((tmp = reader.readLine()) != null) {
-		if(!tmp.contains("=")) {
+	    while ((tmp = reader.readLine()) != null) {
+		if (!tmp.contains("=")) {
 		    continue;
 		}
 		map.put(tmp.split("=")[0], tmp.split("=")[1]);
@@ -63,9 +62,9 @@ public enum DefaultImports {
 	// better crash right! xD Silently is too boring
 	return null;
     });
-    
+
     private Map<String, String> imports;
-    
+
     private DefaultImports(Map<String, String> imports) {
 	this.imports = imports;
     }
@@ -73,7 +72,7 @@ public enum DefaultImports {
     private DefaultImports(Supplier<Map<String, String>> supplier) {
 	this(supplier.get());
     }
-    
+
     /**
      * @return The Imports. Unmodifiable.
      */
@@ -107,12 +106,13 @@ public enum DefaultImports {
 	} catch (IOException e) {
 	    Logger.error(e);
 	}
-	
+
 	return toReturn;
     }
-    
+
     /**
-     * @param fullyQualified The fully qualified name
+     * @param fullyQualified
+     *            The fully qualified name
      * @return The simplified name
      */
     public static String simplifyName(String fullyQualified) {

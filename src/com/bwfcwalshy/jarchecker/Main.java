@@ -40,16 +40,16 @@ public class Main {
 		nobar = true;
 	    }
 	}
-	if(args.length == 3 && args[0].equalsIgnoreCase("createImports")) {
+	if (args.length == 3 && args[0].equalsIgnoreCase("createImports")) {
 	    File from = new File(args[1]);
 	    File to = new File(args[2]);
-	    if(!to.exists()) {
+	    if (!to.exists()) {
 		to.createNewFile();
 	    }
 	    ImportFileCreationUtil.writeJarImportsToFile(from, to.toPath());
 	}
 	if (args.length > 0) {
-	    if(!keywords.contains(args[0].toLowerCase())) {
+	    if (!keywords.contains(args[0].toLowerCase())) {
 		nogui = true;
 		String path;
 		Scanner scanner = null;
@@ -63,7 +63,7 @@ public class Main {
 
 		if (scanner != null)
 		    scanner.close();
-	    } else if( args[0].equalsIgnoreCase("createImports")) {
+	    } else if (args[0].equalsIgnoreCase("createImports")) {
 		Logger.print("Usage:");
 		Logger.print("createImports <library> <output>");
 	    }
@@ -104,7 +104,7 @@ public class Main {
      * @return A Map with all the suspicious classes.
      */
     public static Map<String, String> decompilerStart(String path) {
-	if(!new File("fernflower.jar").exists()) {
+	if (!new File("fernflower.jar").exists()) {
 	    Logger.error("Fernflower jar not found!");
 	    return new HashMap<>(0);
 	}

@@ -28,7 +28,8 @@ public class Decompiler {
 	if (!export.exists())
 	    export.mkdir();
 	// Starts fernflower
-	ProcessBuilder builder = new ProcessBuilder("java", "-jar", "fernflower.jar", f.getAbsolutePath(), export.getAbsolutePath());
+	ProcessBuilder builder = new ProcessBuilder("java", "-jar", "fernflower.jar", f.getAbsolutePath(),
+		export.getAbsolutePath());
 	// Redirects stderr into stdout for ease of use
 	builder.redirectErrorStream(true);
 	try {

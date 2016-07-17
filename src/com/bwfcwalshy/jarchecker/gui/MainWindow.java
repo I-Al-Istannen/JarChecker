@@ -85,15 +85,15 @@ public class MainWindow extends JFrame {
 	    }
 	});
 	FileMenu.add(MenuExit);
-	
+
 	JMenu mnUtils = new JMenu("Utils");
 	menuBar.add(mnUtils);
-	
+
 	JMenuItem mntmImportFileCreator = new JMenuItem("Import file creator");
 	mntmImportFileCreator.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    new ImportFileMaker().setVisible(true);
-		}
+	    public void actionPerformed(ActionEvent e) {
+		new ImportFileMaker().setVisible(true);
+	    }
 	});
 	mnUtils.add(mntmImportFileCreator);
 
@@ -234,21 +234,24 @@ public class MainWindow extends JFrame {
     }
 
     /**
-     * @param line The line to add.
+     * @param line
+     *            The line to add.
      */
     public void appendToLog(String line) {
 	log.append(line);
     }
 
     /**
-     * @param max The maximum value for the progress bar
+     * @param max
+     *            The maximum value for the progress bar
      */
     public void setProgressbarMax(int max) {
 	decompilingProgressBar.setMaximum(max);
     }
 
     /**
-     * @param value The new value
+     * @param value
+     *            The new value
      */
     public void setProgressbarValue(int value) {
 	decompilingProgressBar.setValue(value);

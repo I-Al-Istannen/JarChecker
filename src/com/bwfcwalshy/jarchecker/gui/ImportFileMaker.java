@@ -31,7 +31,7 @@ public class ImportFileMaker extends JFrame {
     private ImportFileMaker inst;
 
     public ImportFileMaker() {
-    	setTitle("Import file maker");
+	setTitle("Import file maker");
 	inst = this;
 	setBounds(150, 150, 450, 170);
 	setResizable(false);
@@ -104,7 +104,8 @@ public class ImportFileMaker extends JFrame {
 		chooseLib.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		if (chooseLib.showSaveDialog(inst) == JFileChooser.APPROVE_OPTION) {
 		    File output = chooseLib.getSelectedFile();
-		    outputPath.setText(output.getAbsolutePath().endsWith(".txt") ? output.getAbsolutePath() : output.getAbsolutePath()+".txt");
+		    outputPath.setText(output.getAbsolutePath().endsWith(".txt") ? output.getAbsolutePath()
+			    : output.getAbsolutePath() + ".txt");
 		}
 	    }
 	});
@@ -117,27 +118,28 @@ public class ImportFileMaker extends JFrame {
 
 	Button go = new Button("Go");
 	go.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    File to = new File(outputPath.getText());
-		    try {
-			to.createNewFile();
-		    } catch (IOException e1) {
-			Logger.error(e1);
-		    }
-		    File lib = new File(libraryPath.getText());
-		    if(lib.exists()) {
-			ImportFileCreationUtil.writeJarImportsToFile(lib, to.toPath());
-		    } else Logger.error("Library does not exist!");
+	    public void actionPerformed(ActionEvent e) {
+		File to = new File(outputPath.getText());
+		try {
+		    to.createNewFile();
+		} catch (IOException e1) {
+		    Logger.error(e1);
 		}
+		File lib = new File(libraryPath.getText());
+		if (lib.exists()) {
+		    ImportFileCreationUtil.writeJarImportsToFile(lib, to.toPath());
+		} else
+		    Logger.error("Library does not exist!");
+	    }
 	});
 	go.setBounds(10, 110, 70, 22);
 	getContentPane().add(go);
 
 	Button exit = new Button("Exit");
 	exit.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    inst.dispose();
-		}
+	    public void actionPerformed(ActionEvent e) {
+		inst.dispose();
+	    }
 	});
 	exit.setBounds(364, 112, 70, 22);
 	getContentPane().add(exit);

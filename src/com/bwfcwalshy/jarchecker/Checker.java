@@ -42,8 +42,8 @@ public class Checker {
      * Creates a new Checker...
      */
     public Checker() {
-		maliciousCount = 0;
-		warningCount = 0;
+	maliciousCount = 0;
+	warningCount = 0;
     }
 
     /**
@@ -310,9 +310,9 @@ public class Checker {
      * An enumeration containing all checks
      */
     enum Checks {
-		// formatter tags because eclipse decided it wants to totally destroy
-		// the enum structure... And the instructions
-		// @formatter:off
+	// formatter tags because eclipse decided it wants to totally destroy
+	// the enum structure... And the instructions
+	// @formatter:off
 		
 		/*
 		 * BEGIN INSTRUCTIONS BLOCK 
@@ -373,63 +373,64 @@ public class Checker {
 		URL(Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"), WarningType.WARNING);
 	
 		// @formatter:on
-		private Predicate<String> predicate;
-		private WarningType type;
-	
-		/**
-		 * @param string
-		 *            The String it must contain in oder to fire
-		 * @param type
-		 *            The type of the check
-		 */
-		private Checks(String string, WarningType type) {
-		    this((line) -> line.contains(string), type);
-		}
-	
-		/**
-		 * @param pattern
-		 *            The Pattern it must contain in oder to fire
-		 * @param type
-		 *            The type of the check
-		 */
-		private Checks(Pattern pattern, WarningType type) {
-		    this((line) -> pattern.matcher(line).find(), type);
-		}
-	
-		/**
-		 * @param predicate
-		 *            The predicate that must match in oder to fire
-		 * @param type
-		 *            The type of the check
-		 */
-		private Checks(Predicate<String> predicate, WarningType type) {
-		    this.predicate = predicate;
-		    this.type = type;
-		}
-	
-		@Override
-		public String toString() {
-		    return super.toString().charAt(0) + super.toString().substring(1).replace("_", " ").toLowerCase();
-		}
-	
-		/**
-		 * @param input The input to check
-		 * @return True if this check fires for the input
-		 */
-		public boolean matches(String input) {
-		    return predicate.test(input);
-		}
-	
-		/**
-		 * @return The type of the check
-		 */
-		public WarningType getType() {
-		    return type;
-		}
+	private Predicate<String> predicate;
+	private WarningType type;
+
+	/**
+	 * @param string
+	 *            The String it must contain in oder to fire
+	 * @param type
+	 *            The type of the check
+	 */
+	private Checks(String string, WarningType type) {
+	    this((line) -> line.contains(string), type);
+	}
+
+	/**
+	 * @param pattern
+	 *            The Pattern it must contain in oder to fire
+	 * @param type
+	 *            The type of the check
+	 */
+	private Checks(Pattern pattern, WarningType type) {
+	    this((line) -> pattern.matcher(line).find(), type);
+	}
+
+	/**
+	 * @param predicate
+	 *            The predicate that must match in oder to fire
+	 * @param type
+	 *            The type of the check
+	 */
+	private Checks(Predicate<String> predicate, WarningType type) {
+	    this.predicate = predicate;
+	    this.type = type;
+	}
+
+	@Override
+	public String toString() {
+	    return super.toString().charAt(0) + super.toString().substring(1).replace("_", " ").toLowerCase();
+	}
+
+	/**
+	 * @param input
+	 *            The input to check
+	 * @return True if this check fires for the input
+	 */
+	public boolean matches(String input) {
+	    return predicate.test(input);
+	}
+
+	/**
+	 * @return The type of the check
+	 */
+	public WarningType getType() {
+	    return type;
+	}
     }
 
     enum WarningType {
-    	WARNING, MALICIOUS;
+	WARNING, MALICIOUS;
     }
 
     /**
@@ -439,19 +440,19 @@ public class Checker {
      * @return The warning level.
      */
     public String getWarningLevel() {
-		if (maliciousCount == 0 && warningCount == 0)
-		    return "not malicious";
-		else if ((maliciousCount >= 1 && maliciousCount < 3) && warningCount < 3)
-		    return "likely malicious";
-		else if (maliciousCount >= 1 && warningCount >= 3)
-		    return "malicious";
-		else if (maliciousCount >= 3)
-			return "malicious";
-		else if (maliciousCount == 0 && warningCount > 3)
-		    return "possibily malicious";
-		else if (maliciousCount == 0 && warningCount <= 3)
-		    return "probably not malicious";
-		else
-		    return "Tell bwfcwalshy to add something here! " + maliciousCount + "," + warningCount;
+	if (maliciousCount == 0 && warningCount == 0)
+	    return "not malicious";
+	else if ((maliciousCount >= 1 && maliciousCount < 3) && warningCount < 3)
+	    return "likely malicious";
+	else if (maliciousCount >= 1 && warningCount >= 3)
+	    return "malicious";
+	else if (maliciousCount >= 3)
+	    return "malicious";
+	else if (maliciousCount == 0 && warningCount > 3)
+	    return "possibily malicious";
+	else if (maliciousCount == 0 && warningCount <= 3)
+	    return "probably not malicious";
+	else
+	    return "Tell bwfcwalshy to add something here! " + maliciousCount + "," + warningCount;
     }
 }
