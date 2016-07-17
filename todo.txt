@@ -1,0 +1,4 @@
+0.9:
+* Move things to AppData (Or equivalent) - Arsen
+* Download fernflower to AppData - Arsen
+* Improve GUI - Walshy
