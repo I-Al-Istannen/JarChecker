@@ -13,7 +13,7 @@ import java.util.zip.ZipFile;
 
 /**
  * Decompiles the plugin using a Fernflower jar named "fernflower.jar" in the
- * same directory.
+ * data directory.
  */
 public class Decompiler {
 
@@ -25,10 +25,14 @@ public class Decompiler {
 	 * @return True if it could be decompiled
 	 */
 	public boolean decompile(File f, File export) {
+		if(!Main.FERNFLOWER.exists()){
+			Logger.error("Fernflower is not downloaded! Cancelling!");
+			return false;
+		}
 		if (!export.exists())
 			export.mkdir();
 		// Starts fernflower
-		ProcessBuilder builder = new ProcessBuilder("java", "-jar", "fernflower.jar", f.getAbsolutePath(),
+		ProcessBuilder builder = new ProcessBuilder("java", "-jar",Main.FERNFLOWER.getAbsolutePath(), f.getAbsolutePath(),
 				export.getAbsolutePath());
 		// Redirects stderr into stdout for ease of use
 		builder.redirectErrorStream(true);

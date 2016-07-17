@@ -2,6 +2,13 @@ package com.bwfcwalshy.jarchecker;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +30,28 @@ public class Main {
 	 * The main window for the gui
 	 */
 	private static MainWindow mainWindow;
+	public static File WORKING_DIR;
+	public static File FERNFLOWER;
 	private static boolean nogui = false;
 	private static boolean nobar = false;
 	private static List<String> keywords = new ArrayList<>();
 
 	@SuppressWarnings("javadoc")
 	public static void main(String[] args) throws ZipException, IOException {
+		// Obtain the data folder
+		String OS = System.getProperty("os.name").toUpperCase();
+		if (OS.contains("WIN"))
+			WORKING_DIR = new File(System.getenv("APPDATA") + File.separator + ".JarChecker");
+		else if (OS.contains("MAC"))
+			WORKING_DIR = new File(System.getProperty("user.home") + "/Library/Application " + "Support"
+					+ File.separator + ".JarChecker");
+		else if (OS.contains("NUX"))
+			WORKING_DIR = new File(System.getProperty("user.home") + File.separator + ".JarChecker");
+		else
+			WORKING_DIR = new File(System.getProperty("user.home") + File.separator + ".JarChecker");
+		WORKING_DIR.mkdirs();
+		FERNFLOWER = new File(WORKING_DIR, "fernflower.jar");
+		
 		keywords.add("--debug");
 		keywords.add("--nobar");
 		keywords.add("createimports");
@@ -73,6 +96,33 @@ public class Main {
 			mw.setVisible(true);
 			Main.mainWindow = mw;
 		}
+		
+		if(!FERNFLOWER.exists()) {
+			Logger.print("Downloading fernflower!");
+			final Path target = FERNFLOWER.toPath();
+			try {
+				final InputStream fromInternet = new URI("https://dl.dropboxusercontent.com/s/b9cna8hproe2smg/fernflower.jar?dl=0").toURL().openStream();
+				new Thread(new Runnable() {
+
+					@Override
+					public void run() {
+						try {
+							Files.copy(fromInternet, target, StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							Logger.error(e);
+						}
+						Logger.print("Fernflower downloaded!");
+					}
+					
+				}, "Download").start();
+				
+			} catch (URISyntaxException | ConnectException e) {
+				Logger.error(e);
+				Logger.error("Failed!");
+				
+			}
+			
+		}
 	}
 
 	/**
@@ -104,13 +154,9 @@ public class Main {
 	 * @return A Map with all the suspicious classes.
 	 */
 	public static Map<String, String> decompilerStart(String path) {
-		if (!new File("fernflower.jar").exists()) {
-			Logger.error("Fernflower jar not found!");
-			return new HashMap<>(0);
-		}
 		Decompiler decompiler = new Decompiler();
 		File f = new File(path);
-		File export = new File(f.getName().replace(".jar", "") + "-src");
+		File export = new File(WORKING_DIR, f.getName().replace(".jar", "") + "-src");
 
 		if (!f.exists()) {
 			Logger.error("The file " + f.getAbsolutePath() + " does not exist!");
@@ -133,6 +179,7 @@ public class Main {
 				Logger.error("Unable to decompile jar file!!");
 				if (nogui)
 					System.exit(1);
+				else return null;
 			}
 		} else {
 			checker.check(new File(path));
@@ -146,8 +193,9 @@ public class Main {
 		Logger.printNoInfo("Found: " + (checker.getFound().isEmpty() ? "Nothing!" : "\n" + checker.getFound()));
 		Logger.printNoInfo("Plugin is " + checker.getWarningLevel() + "!");
 		Logger.emptyLine();
-		Logger.printNoInfo("If you would like any support on what JarChecker is or maybe why your plugin was flagged join the IRC channel #jarchecker on irc.esper.net!");
-		
+		Logger.printNoInfo(
+				"If you would like any support on what JarChecker is or maybe why your plugin was flagged join the IRC channel #jarchecker on irc.esper.net!");
+
 		return checker.getSuspiciusClasses();
 	}
 
