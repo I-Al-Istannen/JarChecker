@@ -48,7 +48,7 @@ public class Main {
 	    }
 	    ImportFileCreationUtil.writeJarImportsToFile(from, to.toPath());
 	}
-	if (args.length == 0) {
+	if (args.length > 0) {
 	    if(!keywords.contains(args[0].toLowerCase())) {
 		nogui = true;
 		String path;
