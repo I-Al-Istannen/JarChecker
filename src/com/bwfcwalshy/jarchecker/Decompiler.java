@@ -1,15 +1,21 @@
 package com.bwfcwalshy.jarchecker;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Decompiles the plugin using a Fernflower jar named "fernflower.jar" in the
@@ -25,15 +31,20 @@ public class Decompiler {
 	 * @return True if it could be decompiled
 	 */
 	public boolean decompile(File f, File export) {
-		if(!Main.FERNFLOWER.exists()){
+		if (!Main.getFernflowerFile().exists()) {
 			Logger.error("Fernflower is not downloaded! Cancelling!");
 			return false;
 		}
 		if (!export.exists())
 			export.mkdir();
+		
+		
+		// TODO: Nicer method than a backup to the source dir. Maybe write the modified file to the Working dir? Requires changes in the Main.
+		stripPackagedSource(f);
+		
 		// Starts fernflower
-		ProcessBuilder builder = new ProcessBuilder("java", "-jar",Main.FERNFLOWER.getAbsolutePath(), f.getAbsolutePath(),
-				export.getAbsolutePath());
+		ProcessBuilder builder = new ProcessBuilder("java", "-jar", Main.getFernflowerFile().getAbsolutePath(),
+				f.getAbsolutePath(), export.getAbsolutePath());
 		// Redirects stderr into stdout for ease of use
 		builder.redirectErrorStream(true);
 		try {
@@ -152,5 +163,34 @@ public class Decompiler {
 
 		// Yay were good!
 		return true;
+	}
+	
+	private void stripPackagedSource(File file) {
+		try {
+			// make backup
+			Files.copy(file.toPath(), file.toPath().resolveSibling(file.getName().replace(".jar", "") + "-backup.jar"), StandardCopyOption.REPLACE_EXISTING);
+			
+			// strip the source files
+			Path tmpFile = Files.createTempFile(file.getName(), "stripped");
+			try(ZipFile jarFile = new ZipFile(file);
+					FileOutputStream fileOutStream = new FileOutputStream(tmpFile.toFile());
+					ZipOutputStream outStream = new ZipOutputStream(fileOutStream)) {
+				
+				Enumeration<? extends ZipEntry> entries = jarFile.entries();
+				while(entries.hasMoreElements()) {
+					ZipEntry entry = entries.nextElement();
+					if(!entry.getName().endsWith(".java")) {
+						outStream.putNextEntry(entry);
+						BufferedInputStream inStream = new BufferedInputStream(jarFile.getInputStream(entry));
+						while(inStream.available() > 0) {
+							outStream.write(inStream.read());
+						}
+					}
+				}
+			}
+			Files.move(tmpFile, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
