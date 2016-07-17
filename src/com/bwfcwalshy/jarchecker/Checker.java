@@ -42,8 +42,8 @@ public class Checker {
      * Creates a new Checker...
      */
     public Checker() {
-	maliciousCount = 0;
-	warningCount = 0;
+		maliciousCount = 0;
+		warningCount = 0;
     }
 
     /**

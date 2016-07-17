@@ -18,7 +18,7 @@ import com.bwfcwalshy.jarchecker.symbol_tables.ImportFileCreationUtil;
 public class Main {
 
     private static boolean debug = false;
-    private static final String VERSION = "v0.8.1";
+    private static final String VERSION = "v0.8.2";
     /**
      * The main window for the gui
      */
