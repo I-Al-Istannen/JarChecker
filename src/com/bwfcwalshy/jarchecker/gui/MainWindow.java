@@ -85,6 +85,17 @@ public class MainWindow extends JFrame {
 	    }
 	});
 	FileMenu.add(MenuExit);
+	
+	JMenu mnUtils = new JMenu("Utils");
+	menuBar.add(mnUtils);
+	
+	JMenuItem mntmImportFileCreator = new JMenuItem("Import file creator");
+	mntmImportFileCreator.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    new ImportFileMaker().setVisible(true);
+		}
+	});
+	mnUtils.add(mntmImportFileCreator);
 
 	JMenu mnHelp = new JMenu("Help");
 

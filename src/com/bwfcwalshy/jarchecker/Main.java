@@ -2,12 +2,15 @@ package com.bwfcwalshy.jarchecker;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.zip.ZipException;
 
 import com.bwfcwalshy.jarchecker.gui.MainWindow;
+import com.bwfcwalshy.jarchecker.symbol_tables.ImportFileCreationUtil;
 
 /**
  * The main class.
@@ -22,9 +25,13 @@ public class Main {
     private static MainWindow mainWindow;
     private static boolean nogui = false;
     private static boolean nobar = false;
+    private static List<String> keywords = new ArrayList<>();
 
     @SuppressWarnings("javadoc")
     public static void main(String[] args) throws ZipException, IOException {
+	keywords.add("--debug");
+	keywords.add("--nobar");
+	keywords.add("createimports");
 	for (String s : args) {
 	    if (s.equalsIgnoreCase("--debug")) {
 		debug = true;
@@ -33,20 +40,33 @@ public class Main {
 		nobar = true;
 	    }
 	}
-	if (args.length > 0 && !args[0].equalsIgnoreCase("--debug")) {
-	    nogui = true;
-	    String path;
-	    Scanner scanner = null;
-	    if (args[0].equalsIgnoreCase("nogui")) {
-		scanner = new Scanner(System.in);
-		path = scanner.next();
-	    } else
-		path = args[0];
+	if(args.length == 3 && args[0].equalsIgnoreCase("createImports")) {
+	    File from = new File(args[1]);
+	    File to = new File(args[2]);
+	    if(!to.exists()) {
+		to.createNewFile();
+	    }
+	    ImportFileCreationUtil.writeJarImportsToFile(from, to.toPath());
+	}
+	if (args.length == 0) {
+	    if(!keywords.contains(args[0].toLowerCase())) {
+		nogui = true;
+		String path;
+		Scanner scanner = null;
+		if (args[0].equalsIgnoreCase("nogui")) {
+		    scanner = new Scanner(System.in);
+		    path = scanner.next();
+		} else
+		    path = args[0];
 
-	    decompilerStart(path);
+		decompilerStart(path);
 
-	    if (scanner != null)
-		scanner.close();
+		if (scanner != null)
+		    scanner.close();
+	    } else if( args[0].equalsIgnoreCase("createImports")) {
+		Logger.print("Usage:");
+		Logger.print("createImports <library> <output>");
+	    }
 	} else {
 	    // GUI goes here
 	    MainWindow mw = new MainWindow();
