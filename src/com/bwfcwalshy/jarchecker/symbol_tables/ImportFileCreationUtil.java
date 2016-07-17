@@ -30,92 +30,92 @@ import java.util.zip.ZipEntry;
  */
 public class ImportFileCreationUtil {
 
-    /**
-     * @param jar
-     *            The jar file to read from
-     * @param writeTo
-     *            The path to write it to
-     */
-    public static void writeJarImportsToFile(File jar, Path writeTo) {
-	Predicate<ZipEntry> filter = entry -> entry.getName().endsWith(".class") && !entry.getName().contains("$");
+	/**
+	 * @param jar
+	 *            The jar file to read from
+	 * @param writeTo
+	 *            The path to write it to
+	 */
+	public static void writeJarImportsToFile(File jar, Path writeTo) {
+		Predicate<ZipEntry> filter = entry -> entry.getName().endsWith(".class") && !entry.getName().contains("$");
 
-	if (!jar.getAbsolutePath().endsWith(".jar")) {
-	    return;
-	}
-	try (JarFile jarFile = new JarFile(jar)) {
-
-	    Enumeration<JarEntry> entries = jarFile.entries();
-
-	    List<String> list = new LinkedList<>();
-
-	    while (entries.hasMoreElements()) {
-		ZipEntry entry = entries.nextElement();
-		if (!filter.test(entry)) {
-		    continue;
+		if (!jar.getAbsolutePath().endsWith(".jar")) {
+			return;
 		}
-		String fullyQuallified = entry.getName().replace("/", ".").replace(".class", "");
-		String together = simplifyName(fullyQuallified) + "=" + fullyQuallified;
-		list.add(together);
-	    }
-	    Collections.sort(list);
-	    Files.write(writeTo, list, StandardCharsets.UTF_8, StandardOpenOption.WRITE);
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-    }
+		try (JarFile jarFile = new JarFile(jar)) {
 
-    /**
-     * Merges all the txts in this package to one, called
-     * "bukkit-imports-joined.txt", which MUST exist.
-     * 
-     * @param outputFile
-     *            The output file.
-     */
-    public static void mergeImportFiles(Path outputFile) {
-	URL location = SymbolTreeParser.class.getProtectionDomain().getCodeSource().getLocation();
-	Set<String> imports = new HashSet<>();
-	if (location != null && location.getFile().endsWith(".jar")) {
-	    System.out.println("Merging imports from Jar file...");
-	    try (JarFile jarFile = new JarFile(new File(location.toURI()))) {
+			Enumeration<JarEntry> entries = jarFile.entries();
 
-		Enumeration<JarEntry> entries = jarFile.entries();
-		while (entries.hasMoreElements()) {
-		    ZipEntry entry = entries.nextElement();
-		    if (entry.getName().startsWith("com/bwfcwalshy/jarchecker/symbol_tables")
-			    && entry.getName().endsWith(".txt")) {
-			try (InputStream inStream = jarFile.getInputStream(entry);
-				InputStreamReader inStreamReader = new InputStreamReader(inStream);
-				BufferedReader reader = new BufferedReader(inStreamReader);) {
+			List<String> list = new LinkedList<>();
 
-			    String tmp;
-			    while ((tmp = reader.readLine()) != null) {
-				imports.add(tmp);
-			    }
+			while (entries.hasMoreElements()) {
+				ZipEntry entry = entries.nextElement();
+				if (!filter.test(entry)) {
+					continue;
+				}
+				String fullyQuallified = entry.getName().replace("/", ".").replace(".class", "");
+				String together = simplifyName(fullyQuallified) + "=" + fullyQuallified;
+				list.add(together);
 			}
-		    }
+			Collections.sort(list);
+			Files.write(writeTo, list, StandardCharsets.UTF_8, StandardOpenOption.WRITE);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-	    } catch (IOException | URISyntaxException e) {
-		e.printStackTrace();
-	    }
-	} else {
-	    try {
-		System.out.println("Merging imports from the File system...");
-		File dir = new File("src/com/bwfcwalshy/jarchecker/symbol_tables");
-		for (Path path : Files.list(dir.toPath()).filter(path -> path.toString().endsWith(".txt"))
-			.collect(Collectors.toList())) {
-		    imports.addAll(Files.readAllLines(path, StandardCharsets.UTF_8));
+	}
+
+	/**
+	 * Merges all the txts in this package to one, called
+	 * "bukkit-imports-joined.txt", which MUST exist.
+	 * 
+	 * @param outputFile
+	 *            The output file.
+	 */
+	public static void mergeImportFiles(Path outputFile) {
+		URL location = SymbolTreeParser.class.getProtectionDomain().getCodeSource().getLocation();
+		Set<String> imports = new HashSet<>();
+		if (location != null && location.getFile().endsWith(".jar")) {
+			System.out.println("Merging imports from Jar file...");
+			try (JarFile jarFile = new JarFile(new File(location.toURI()))) {
+
+				Enumeration<JarEntry> entries = jarFile.entries();
+				while (entries.hasMoreElements()) {
+					ZipEntry entry = entries.nextElement();
+					if (entry.getName().startsWith("com/bwfcwalshy/jarchecker/symbol_tables")
+							&& entry.getName().endsWith(".txt")) {
+						try (InputStream inStream = jarFile.getInputStream(entry);
+								InputStreamReader inStreamReader = new InputStreamReader(inStream);
+								BufferedReader reader = new BufferedReader(inStreamReader);) {
+
+							String tmp;
+							while ((tmp = reader.readLine()) != null) {
+								imports.add(tmp);
+							}
+						}
+					}
+				}
+			} catch (IOException | URISyntaxException e) {
+				e.printStackTrace();
+			}
+		} else {
+			try {
+				System.out.println("Merging imports from the File system...");
+				File dir = new File("src/com/bwfcwalshy/jarchecker/symbol_tables");
+				for (Path path : Files.list(dir.toPath()).filter(path -> path.toString().endsWith(".txt"))
+						.collect(Collectors.toList())) {
+					imports.addAll(Files.readAllLines(path, StandardCharsets.UTF_8));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-	    } catch (IOException e) {
-		e.printStackTrace();
-	    }
+		System.out.println("...Merge size: " + imports.size());
+		try {
+			Files.write(outputFile, imports.stream().sorted().collect(Collectors.toList()), StandardCharsets.UTF_8,
+					StandardOpenOption.WRITE);
+			System.out.println("Wrote merged file to the file system (" + outputFile.toString() + ")");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-	System.out.println("...Merge size: " + imports.size());
-	try {
-	    Files.write(outputFile, imports.stream().sorted().collect(Collectors.toList()), StandardCharsets.UTF_8,
-		    StandardOpenOption.WRITE);
-	    System.out.println("Wrote merged file to the file system (" + outputFile.toString() + ")");
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-    }
 }
