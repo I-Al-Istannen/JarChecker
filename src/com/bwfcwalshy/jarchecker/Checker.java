@@ -332,16 +332,21 @@ public class Checker {
 		 * TODO: Expand
 		 */
 
-		ENDLESS_LOOP(Pattern.compile("for\\((\\s*)?;(\\s*)?;(\\s*)?;(\\s*)?\\)"), WarningType.MALICIOUS), EXIT(".exit(",
-				WarningType.MALICIOUS), OP_ME(Pattern.compile("op(\\s|_|-)?me"), WarningType.MALICIOUS),
-				// This could probably be changed to check the imports butI'll
-				// leave that for someone else to do as I am not familiar
-				// with how they are implemented yet.
-		PROCESS_BUILDER("ProcessBuilder", WarningType.MALICIOUS), RUNTIME("Runtime.getRuntime(",
-				WarningType.MALICIOUS), SHUTDOWN(".shutdown()", WarningType.MALICIOUS), THREAD_SLEEP("Thread.sleep",
-						WarningType.MALICIOUS), WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"),
-								WarningType.MALICIOUS),
-
+		ENDLESS_LOOP(Pattern.compile("for\\((\\s*)?;(\\s*)?;(\\s*)?;(\\s*)?\\)"), WarningType.MALICIOUS),
+		EXIT(".exit(", WarningType.MALICIOUS),
+		OP_ME(Pattern.compile("op(\\s|_|-)?me"), WarningType.MALICIOUS),
+		
+		// This could probably be changed to check the imports butI'll
+		// leave that for someone else to do as I am not familiar
+		// with how they are implemented yet.
+		// EDIT: I Al Istannen: Probably not needed, as this String must appear at one time,
+		// in an import or in a fully qualified name. There should also be no conflicts
+		// with other names, as it is quite unique.
+		PROCESS_BUILDER("ProcessBuilder", WarningType.MALICIOUS),
+		RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS),
+		SHUTDOWN(".shutdown()", WarningType.MALICIOUS),
+		THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS),
+		WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS),
 		EQUALS_NAME(line -> {
 			Pattern pattern = Pattern.compile(
 					"getName\\(\\).(equals|equalsIgnoreCase|contains|contentEquals|compareTo|compareToIgnoreCase|endsWith|startsWith|matches)\\(\\\"[a-zA-Z0-9]+\\\"\\)");
@@ -364,12 +369,15 @@ public class Checker {
 				}
 				return true;
 			}
-		} , WarningType.WARNING), IP_ADDRESS(Pattern.compile("\\d{1,3}.+\\:?\\d{1,5}$"),
-				WarningType.WARNING), STAR_PERM(Pattern.compile("addPermission\\((\\s*)?\"\\*\""),
-						WarningType.WARNING), SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"),
-								WarningType.WARNING), URL(
-										Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"),
-										WarningType.WARNING);
+		} , WarningType.WARNING),
+		IP_ADDRESS(Pattern.compile("\\d{1,3}.+\\:?\\d{1,5}$"), WarningType.WARNING),
+		STAR_PERM(Pattern.compile("addPermission\\((\\s*)?\"\\*\""), WarningType.WARNING),
+		SET_OP(Pattern.compile("setOp\\((\\s*)?true(\\s*)?\\)"), WarningType.WARNING),
+		// added as a response to
+		// https://bukkit.org/threads/jar-checker-feedback-and-contributions-welcome.425456/#post-3403927
+		// maybe this is enough...
+		ADD_OP("addOp(", WarningType.WARNING),
+		URL(Pattern.compile("(https?):\\/\\/(www.)?[a-zA-Z]+.[a-zA-Z]+.([a-zA-Z]+)?"), WarningType.WARNING);
 
 		// @formatter:on
 		private Predicate<String> predicate;
