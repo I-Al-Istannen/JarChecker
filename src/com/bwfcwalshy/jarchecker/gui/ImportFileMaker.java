@@ -22,14 +22,14 @@ import com.bwfcwalshy.jarchecker.symbol_tables.ImportFileCreationUtil;
  */
 public class ImportFileMaker extends JFrame {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -6161855705604709387L;
 	private JTextField libraryPath;
 	private JTextField outputPath;
 	private ImportFileMaker inst;
 
+	/**
+	* Creates the default window
+	*/
 	public ImportFileMaker() {
 		setTitle("Import file maker");
 		inst = this;
@@ -128,9 +128,31 @@ public class ImportFileMaker extends JFrame {
 				File lib = new File(libraryPath.getText());
 				if (lib.exists()) {
 					ImportFileCreationUtil.writeJarImportsToFile(lib, to.toPath());
-				} else
+					// open a nice dialog to show it is done
+					JPanel root = new JPanel(new GridLayout(3, 1));
+					JLabel fileSavedLabel = new JLabel("File saved successfully!");
+					root.add(fileSavedLabel);
+					// dummy for spacing
+					root.add(new JLabel(""));
+				
+					// make it openable
+					Button viewButton = new Button("View");
+					viewButton.addActionListener(action -> {
+					try {
+						Desktop.getDesktop().open(to);
+					} catch (Exception e1) {
+						Logger.error(e1);
+						JOptionPane.showMessageDialog(root, e1.getMessage(), "Couldn't open the file", JOptionPane.ERROR_MESSAGE);
+					}
+					});
+					root.add(viewButton);
+				    
+					// show the dialog as an info
+					JOptionPane.showMessageDialog(rootPane, root, "File saved", JOptionPane.INFORMATION_MESSAGE);
+				} else {
 					Logger.error("Library does not exist!");
-			}
+				}
+			    }
 		});
 		go.setBounds(10, 110, 70, 22);
 		getContentPane().add(go);
