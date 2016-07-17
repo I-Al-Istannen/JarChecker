@@ -131,7 +131,7 @@ public class Main {
     }
 
     /**
-     * @return True if debug information shoudl be printed
+     * @return True if debug information should be printed
      */
     public static boolean isPrintDebug() {
 	return debug;

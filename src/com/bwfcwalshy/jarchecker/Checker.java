@@ -242,8 +242,8 @@ public class Checker {
     /**
      * Performs some additional checks. <br>
      * Currently: <br>
-     * If both, setOp and hardCodedName have fired <br>
-     * If opMe and setOp have fired.
+     * If both, SET_OP and EQUALS_NAME have fired <br>
+     * If OP_ME and SET_OP have fired.
      */
     public void extraChecks() {
 	for (ArrayList<Checks> foundChecks : this.foundChecks.values()) {
@@ -275,7 +275,7 @@ public class Checker {
 
     /**
      * <b>Format:</b> <br>
-     * "[Check type] x[amount of times it occurred]" (e.g. "URL x2")
+     * "[Check type] x[amount of times it occurred]\n" (e.g. "URL x2\n")
      * 
      * @return A String with all the found checks.
      */
@@ -324,7 +324,7 @@ public class Checker {
 	 * will do one of the following: - Check if a string matches the Pattern
 	 * you provided - Checks does a line contain a certain substring - Run a
 	 * .test() from Predicate on the line in order to check does it have
-	 * something bad in it 
+	 * something bad in it. When naming your check keep in mind that underscores ("_") are replaced with spaces
 	 * 
 	 * END INSTRUCTIONS BLOCK 
 	 * 
@@ -406,7 +406,7 @@ public class Checker {
 
 	@Override
 	public String toString() {
-	    return super.toString().charAt(0) + super.toString().substring(1).replace("_", "").toLowerCase();
+	    return super.toString().charAt(0) + super.toString().substring(1).replace("_", " ").toLowerCase();
 	}
 
 	/**
