@@ -61,6 +61,17 @@ public class Logger {
 		String x = getTime() + " [ERROR] " + msg;
 		printNoInfo(x);
 	}
+	
+	/**
+	 * Will print the message with the prefix "{@link #getTime()} [WARN] "
+	 * 
+	 * @param msg
+	 *            The message to print
+	 */
+	public static void warn(String msg) {
+		String x = getTime() + " [WARN] " + msg;
+		printNoInfo(x);
+	}
 
 	/**
 	 * Will print the exception with the prefix: "{@link #getTime()} [ERROR]"
