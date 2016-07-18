@@ -12,10 +12,8 @@ Frenflower compiled (See below)
 
 ## Build
 
-To build JarChecker you will need to compile the master branch of this repo.  
-Once the program has been compiled into a runnable jar file you need to compile fernflower (GitHub repo: https://github.com/fesh0r/fernflower) and place it next to the JarChecker jar.  
-Once you have JarChecker and fernflower compiled and in the same location look at the usage section.
-
+To build JarChecker you will need to compile the master branch of this repo. It will automatically download Fernflower to %appdata%/.JarChecker . This program should be Windows-independent, but if you run into any problems, please report them in the GitHub Issue tracker
+ 
 ## Usage
 To use double click the jar to get the GUI or run 
   ``java -jar JarChecker.jar <path | nogui>``
