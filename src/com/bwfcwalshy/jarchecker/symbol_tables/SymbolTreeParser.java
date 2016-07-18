@@ -76,18 +76,26 @@ public class SymbolTreeParser {
 	 */
 	public void parse() {
 		this.currentNode = rootNode;
-
+		
 		int lineCounter = 1;
 		for (String string : source.split(System.lineSeparator())) {
-			if (string.contains("{")) {
-				SymbolTableTree parent = currentNode;
-				currentNode = new SymbolTableTree(currentNode, lineCounter);
-				parent.addChild(currentNode);
+			for (char c : string.toCharArray()) {
+				// correctly handle brackets by scanning from left to right
+				if (c == '{') {
+					SymbolTableTree parent = currentNode;
+					currentNode = new SymbolTableTree(currentNode, lineCounter);
+					parent.addChild(currentNode);
+				}
+				if (c == '}') {
+					currentNode.setLineEnd(lineCounter);
+					// this can throw an error. An error can mean two things:
+					// 1. Mismatched brackets
+					// 2. A Bracket was skipped somehow
+					// !It is important it gets thrown, as it indicates a critical failure of this method!
+					currentNode = currentNode.getParent().get();
+				}
 			}
-			if (string.contains("}")) {
-				currentNode.setLineEnd(lineCounter);
-				currentNode = currentNode.getParent().get();
-			}
+
 
 			// skip comments and import statements
 			if (string.trim().startsWith("//") || string.startsWith("import") || string.startsWith("package")
@@ -114,6 +122,12 @@ public class SymbolTreeParser {
 						varName = varName.substring(0, varName.indexOf(" "));
 					}
 
+					// TODO: Check if this statement is universally true!
+					// "Not a variable, but actually a constructor or a cast"
+					if(varName.startsWith("(") || varName.startsWith(")")) {
+						continue;
+					}
+					
 					for (String s : nameForbiddenSequences) {
 						varName = varName.replace(s, "");
 					}
