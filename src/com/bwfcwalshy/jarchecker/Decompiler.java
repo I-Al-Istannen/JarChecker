@@ -37,7 +37,23 @@ public class Decompiler {
 		}
 		if (!export.exists())
 			export.mkdir();
-		
+
+		File target;
+		if((target = new File(export, f.getName())).exists()) {
+			Logger.debug("Moving allready existing decompiled file!");
+			File toMove = new File(export, f.getName());
+			int count = 0;
+			while(toMove.exists()) {
+				toMove = new File(export, toMove.getName().replaceAll("(\\s\\([0-9]([0-9]*)\\))?.jar", " ("+ ++count + ").jar"));
+				Logger.debug(toMove.getName());
+			}
+			try {
+				Files.move(target.toPath(), toMove.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Logger.debug("Complete!");
+			} catch (IOException e) {
+				Logger.error(e);
+			}
+		}
 		
 		// TODO: Nicer method than a backup to the source dir. Maybe write the modified file to the Working dir? Requires changes in the Main.
 		stripPackagedSource(f);
