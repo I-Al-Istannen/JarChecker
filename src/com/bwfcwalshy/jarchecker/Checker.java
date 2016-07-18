@@ -344,7 +344,7 @@ public class Checker {
 		// with other names, as it is quite unique.
 		PROCESS_BUILDER("ProcessBuilder", WarningType.MALICIOUS),
 		RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS),
-		SHUTDOWN(".shutdown()", WarningType.MALICIOUS),
+		SHUTDOWN(Pattern.compile("((getServer\\((\\s*)?\\))|Bukkit).shutdown\\("), WarningType.MALICIOUS),
 		THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS),
 		WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS),
 		EQUALS_NAME(line -> {
