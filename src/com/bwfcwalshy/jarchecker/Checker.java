@@ -344,7 +344,47 @@ public class Checker {
 		// with other names, as it is quite unique.
 		PROCESS_BUILDER("ProcessBuilder", WarningType.MALICIOUS),
 		RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS),
-		SHUTDOWN(Pattern.compile("((getServer\\((\\s*)?\\))|Bukkit).shutdown\\("), WarningType.MALICIOUS),
+		SHUTDOWN(line -> {
+			// quick check at the beginning, if there even is something suspicious
+			if(!line.contains("shutdown")) {
+				return false;
+			}
+			Pattern specialisedPattern = Pattern.compile("((getServer\\((\\s*)?\\))|Bukkit).shutdown\\(");
+			if(specialisedPattern.matcher(line).find()) {
+				return true;
+			}
+			
+			Pattern findVariable = Pattern.compile("([^\\s()!]+)(?=.shutdown\\(\\))");
+			Matcher findVariableMatcher = findVariable.matcher(line);
+			// not even a variable?
+			if(!findVariableMatcher.find()) {
+				// this can happen if it is a method of the same class, and invoked on a Server instance. This should be harmless.
+				Logger.debug("Found a shutdown without variable: " + line);
+				return false;
+			}
+			else {
+				String name = findVariableMatcher.group(1);
+				Optional<String> fullyQualified = currentSymbolTree.getFullyQualifiedType(currentLine, name);
+				if(fullyQualified.isPresent()) {
+					Logger.debug("Found " + name + " of type " + fullyQualified.get());
+					
+					// is a server variable
+					if(fullyQualified.get().equals("org.bukkit.Server") || fullyQualified.get().matches("org\\.bukkit\\.craftbukkit\\.v.+\\.CraftServer")) {
+						return true;
+					}
+					
+					// is an own class
+					return false;
+				}
+				else {
+					Logger.warn("Found " + name + " with no type");
+					
+					// you may want to fire once too often, but I chose to remain silent this time.
+					return false;
+				}
+			}
+			
+		}, WarningType.MALICIOUS),
 		THREAD_SLEEP("Thread.sleep", WarningType.MALICIOUS),
 		WHILE_TRUE(Pattern.compile("while\\((\\s*)?true(\\s*)?\\)"), WarningType.MALICIOUS),
 		EQUALS_NAME(line -> {
