@@ -173,8 +173,8 @@ public class SymbolTreeParser {
 			return;
 		}
 		DefaultImports.getImportsFromJar(sourceFile, entry -> {
-			return !(entry.getName().contains("$") || !entry.getName().endsWith(".class"));
-		}).stream().forEach(this::addImport);
+			return entry.getName().endsWith(".class");
+		}, true).stream().forEach(this::addImport);
 	}
 
 	/**

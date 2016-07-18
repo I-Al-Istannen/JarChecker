@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
@@ -34,10 +35,14 @@ public enum DefaultImports {
 		rtJarPath = Arrays.stream(rtJarPath.split(";")).filter(string -> string.endsWith("rt.jar")).findAny().get();
 
 		return DefaultImports.getImportsFromJar(new File(rtJarPath), entry -> {
-			return entry.getName().contains("java/lang") && entry.getName().split("/").length == 3
-					&& !entry.getName().contains("$");
-		}).stream().map(fullyQualified -> fullyQualified + "=" + simplifyName(fullyQualified))
-				.collect(Collectors.toMap(string -> string.split("=")[1], string -> string.split("=")[0]));
+			return entry.getName().contains("java/lang") && entry.getName().split("/").length == 3;
+		}, true).stream()
+				.map(fullyQualified -> fullyQualified + "=" + simplifyName(fullyQualified))
+				.collect(Collectors.toMap(string -> string.split("=")[1], string -> string.split("=")[0], (valueOne, valueTwo) -> valueOne));
+		// TODO: Allow multiple imports per key! (e.g. org.bukkit.block.Chest and org.bukkit.material.Chest
+		// it was fixed here by keeping the first ((valueOne, valueTwo) -> valueOne) but we need a nicer solution, allowing both.
+		// the same problem also arises in the SymbolTreeParser. There you need to decide based on the file imports and the fully qualified name
+		// I wish you good luck!
 	}),
 	/**
 	 * All the imports from the supplied "bukkit-imports-joined.txt" file.
@@ -85,9 +90,14 @@ public enum DefaultImports {
 	 *            The file to read from
 	 * @param filter
 	 *            The filter the files must match
+	 * @param addInnerClassesIfNotFiltered
+	 *            If true inner classes will be added to the set, if the filer
+	 *            allows for them.
+	 * 
 	 * @return A set with all imports from the jar file.
 	 */
-	public static Set<String> getImportsFromJar(File file, Predicate<ZipEntry> filter) {
+	public static Set<String> getImportsFromJar(File file, Predicate<ZipEntry> filter,
+			boolean addInnerClassesIfNotFiltered) {
 		if (!file.getAbsolutePath().endsWith(".jar")) {
 			return Collections.emptySet();
 		}
@@ -101,7 +111,24 @@ public enum DefaultImports {
 				if (!filter.test(entry)) {
 					continue;
 				}
-				toReturn.add(entry.getName().replace("/", ".").replace(".class", ""));
+
+				// is inner class
+				if (entry.getName().contains("$") && addInnerClassesIfNotFiltered) {
+					String[] splitted = entry.getName().replace("/", ".").replace(".class", "").split(Pattern.quote("$"));
+					String innerClassName = splitted[1];
+
+					// ignore anonymous ones
+					if (innerClassName.matches("[0-9]+")) {
+						continue;
+					}
+
+					innerClassName = innerClassName.replaceFirst("[0-9]+", "");
+					
+					String name = splitted[0] + "." + innerClassName;
+					toReturn.add(name);
+				} else {
+					toReturn.add(entry.getName().replace("/", ".").replace(".class", ""));
+				}
 			}
 		} catch (IOException e) {
 			Logger.error(e);
