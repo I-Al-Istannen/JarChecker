@@ -1,5 +1,6 @@
 package com.bwfcwalshy.jarchecker.jfx_gui.log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,18 +10,28 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+import com.bwfcwalshy.jarchecker.gui.MainWindow;
 import com.bwfcwalshy.jarchecker.jfx_gui.AppMain;
-import com.bwfcwalshy.jarchecker.jfx_gui.log.LogFilter.FilterType;
+import com.bwfcwalshy.jarchecker.jfx_gui.log.create_log_filter.CreateLogFilterController;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 /**
  * The log
@@ -34,45 +45,72 @@ public class LogPaneController {
 	
     @FXML
     private TextArea textArea;
+    
+    @FXML
+    private MenuItem clearMenuItem;
+    
+    @FXML
+    private MenuItem copyAllMenuItem;
+    
+    @FXML
+    private CheckMenuItem wrapTextCheckMenuItem;
+    
+    @FXML
+    private void initialize() {
+		{
+			Image copyAllIcon = new Image(MainWindow.class.getResource("/resources/copy icon.png").toString(), 20, 20,
+					true, true);
+			copyAllMenuItem.setGraphic(new ImageView(copyAllIcon));
+		}
 
+		{
+			Image copyAllIcon = new Image(MainWindow.class.getResource("/resources/delete icon.png").toString(), 20, 20,
+					true, true);
+			clearMenuItem.setGraphic(new ImageView(copyAllIcon));
+		}
+    }
+    
     @FXML
     void onCopyAll(ActionEvent event) {
     	Clipboard clipboard = Clipboard.getSystemClipboard();
     	ClipboardContent content = new ClipboardContent();
     	content.putString(textArea.getText());
     	clipboard.setContent(content);
-    	
-    	new Thread(() -> {
-    		try {
-				Thread.sleep(2000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-    		Platform.runLater(() -> {
-    			addMessage(Level.WARNING, "[WARN] LOL");
-    		});
-    		
-    		try {
-				Thread.sleep(2000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-    		
-   			addFilter(new LogFilter(FilterType.AND, level -> level != Level.WARNING, "Not warning"));
-   			
-    		try {
-				Thread.sleep(2000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-    		
-    		addFilter(new LogFilter(FilterType.OR, level -> level == Level.WARNING, "Warning"));
-    	}, "Test").start();
+    }
+    
+    @FXML
+    void onClear(ActionEvent event) {
+    	removeAllMessages();
+    }
+
+    @FXML
+    void onWrapText(ActionEvent event) {
+   		textArea.setWrapText(wrapTextCheckMenuItem.isSelected());
     }
 
     @FXML
     void onFilterLogLevel(ActionEvent event) {
-    	// TODO: Continue here
+    	try {
+			FXMLLoader loader = new FXMLLoader(CreateLogFilterController.class.getResource("CreateLogFilter.fxml"));
+			GridPane pane = loader.load();
+			CreateLogFilterController controller = loader.getController();
+			
+			Stage stage = new Stage();
+			stage.initOwner(AppMain.getInstance().getPrimaryStage());
+			stage.initModality(Modality.APPLICATION_MODAL);
+			
+			stage.setScene(new Scene(pane));
+			
+			controller.setThisStage(stage);
+			
+			stage.showAndWait();
+			
+			controller.getFilter().ifPresent(filter -> {
+				addFilter(filter);
+			});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
     
     @FXML
@@ -117,6 +155,14 @@ public class LogPaneController {
     }
     
     /**
+     * Removes all the messages
+     */
+    public void removeAllMessages() {
+    	messages.clear();
+    	updateMessages();
+    }
+    
+    /**
      * @param level The Level of the message
      * @param message The message to add
      */
@@ -126,7 +172,10 @@ public class LogPaneController {
     	}
     	messages.get(level).add(message);
     	
-    	updateMessages();
+    	// could call updateMessages, but that would be overkill and too slow
+    	if(resultingFilter.test(level)) {
+    		textArea.appendText(message + System.lineSeparator());
+    	}
     }
 
     /**

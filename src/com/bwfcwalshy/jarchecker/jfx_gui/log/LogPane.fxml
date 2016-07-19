@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -12,7 +13,7 @@
    <center>
       <BorderPane id="borderPaneLog" maxHeight="10000.0" maxWidth="10000.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
          <center>
-            <TextArea fx:id="textArea" editable="false" prefHeight="200.0" prefWidth="200.0" styleClass="log-text-field" text="This is a test" BorderPane.alignment="CENTER" />
+            <TextArea fx:id="textArea" editable="false" prefHeight="200.0" prefWidth="200.0" styleClass="log-text-field" text="This is a test, to show the font. Will be automatically deleted, once the update method is called.&#10;" BorderPane.alignment="CENTER" />
          </center>
          <top>
             <MenuBar BorderPane.alignment="CENTER">
@@ -28,8 +29,14 @@
                 </Menu>
                   <Menu mnemonicParsing="false" text="Operations">
                     <items>
-                      <MenuItem mnemonicParsing="false" onAction="#onCopyAll" text="Copy all" />
+                      <MenuItem fx:id="copyAllMenuItem" mnemonicParsing="false" onAction="#onCopyAll" text="Copy all" />
+                        <MenuItem fx:id="clearMenuItem" mnemonicParsing="false" onAction="#onClear" text="Clear" />
                     </items>
+                  </Menu>
+                  <Menu mnemonicParsing="false" text="Log Options">
+                     <items>
+                        <CheckMenuItem fx:id="wrapTextCheckMenuItem" mnemonicParsing="false" onAction="#onWrapText" text="Wrap text" />
+                     </items>
                   </Menu>
               </menus>
             </MenuBar>

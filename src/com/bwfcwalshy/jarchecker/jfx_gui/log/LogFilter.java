@@ -60,7 +60,7 @@ public class LogFilter {
 	/**
 	 * The type of a filter
 	 */
-	enum FilterType {
+	public enum FilterType {
 		/**
 		 * A filter that is combined with a logical AND
 		 */

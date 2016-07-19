@@ -1,16 +1,23 @@
 package com.bwfcwalshy.jarchecker.jfx_gui;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.bwfcwalshy.jarchecker.gui.MainWindow;
 import com.bwfcwalshy.jarchecker.jfx_gui.log.LogPaneController;
 import com.bwfcwalshy.jarchecker.jfx_gui.utils.import_file_creator.ImportFileCreatorController;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -24,6 +31,8 @@ import javafx.stage.Stage;
 public class MainWindowController {
 
 	private LogPaneController logPane;
+	
+	private ProgressIndicator progressIndicator;
 	
     @FXML
     private BorderPane borderPane;
@@ -76,18 +85,51 @@ public class MainWindowController {
 
 	@FXML
 	void onCheckFile(ActionEvent event) {
+		Alert alert = new Alert(AlertType.NONE);
+		alert.getButtonTypes().add(ButtonType.CLOSE);
+		alert.setHeaderText("Decompiling");
+		progressIndicator = new ProgressIndicator();
+		progressIndicator.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+		progressIndicator.setPrefSize(100, 100);
+		alert.getDialogPane().setContent(progressIndicator);
+		
+		Timer timer = new Timer("test");
+		timer.scheduleAtFixedRate(new TimerTask() {
 
+			double counter = -0.5;
+			@Override
+			public void run() {
+				if(counter > 1) {
+					this.cancel();
+					return;
+				}
+				counter += 0.01;
+				setProgress(counter);
+			}
+		}, 0, 100);
+		
+		alert.showAndWait();
+		progressIndicator = null;
 	}
-
-	@FXML
-	void onDebugChange(ActionEvent event) {
-
+	
+	/**
+	 * @param progress The progress, negative for indefinite, between 0 and 1 for displaying
+	 */
+	public void setProgress(double progress) {
+		if(this.progressIndicator != null) {
+			if(!Platform.isFxApplicationThread()) {
+				Platform.runLater(() -> setProgress(progress));
+				return;
+			}
+			this.progressIndicator.setProgress(progress);
+		}
 	}
-
+	
 	@FXML
 	void onExit(ActionEvent event) {
 		System.exit(1);
 	}
+	
 
 	@FXML
 	void onImportFileCreator(ActionEvent event) {
@@ -107,5 +149,12 @@ public class MainWindowController {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * @return The log pane
+	 */
+	public LogPaneController getLogPane() {
+		return logPane;
 	}
 }

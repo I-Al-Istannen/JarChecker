@@ -1,5 +1,7 @@
 package com.bwfcwalshy.jarchecker.jfx_gui;
 
+import com.bwfcwalshy.jarchecker.jfx_gui.log.LogPaneController;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -16,6 +18,8 @@ public class AppMain extends Application {
 	
 	private Stage primaryStage;
 	
+	private MainWindowController mainWindowController;
+	
 	/**
 	 * Default constructor
 	 */
@@ -29,6 +33,7 @@ public class AppMain extends Application {
 		
 		FXMLLoader loader = new FXMLLoader(AppMain.class.getResource("MainWindow.fxml"));
 		BorderPane mainPane = loader.load();
+		mainWindowController = loader.getController();
 		
 		Scene scene = new Scene(mainPane);
 		primaryStage.setScene(scene);
@@ -41,6 +46,20 @@ public class AppMain extends Application {
 	 */
 	public Stage getPrimaryStage() {
 		return primaryStage;
+	}
+	
+	/**
+	 * @return The log pane controller
+	 */
+	public LogPaneController getLogPane() {
+		return mainWindowController.getLogPane();
+	}
+	
+	/**
+	 * @return The controller for the main window
+	 */
+	public MainWindowController getMainWindowController() {
+		return mainWindowController;
 	}
 	
 	/**
