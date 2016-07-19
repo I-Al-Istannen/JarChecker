@@ -1,0 +1,14 @@
+#header {
+	-fx-font-size: 20px;
+}
+
+.outputLabel {
+	-fx-border-width: 1px;
+	-fx-border-color: gray;
+	-fx-font-family: "Monospaced"
+}
+
+.buttonBar {
+	-fx-border-width: 2px 0px 0px 0px;
+	-fx-border-color: gray;
+}

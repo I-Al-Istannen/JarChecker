@@ -1,0 +1,13 @@
+.log-text-field {
+	-fx-font-family: "Monospaced";
+}
+
+#heading {
+	-fx-font-size: 25;
+	-fx-font-weight: bolder;
+}
+
+#borderPaneLog {
+	-fx-border-width: 2px 0px 0px 0px;
+	-fx-border-color: black;
+}

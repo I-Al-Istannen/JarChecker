@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane stylesheets="@LogPaneCss.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bwfcwalshy.jarchecker.jfx_gui.log.LogPaneController">
+   <center>
+      <BorderPane id="borderPaneLog" maxHeight="10000.0" maxWidth="10000.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
+         <center>
+            <TextArea fx:id="textArea" editable="false" prefHeight="200.0" prefWidth="200.0" styleClass="log-text-field" text="This is a test" BorderPane.alignment="CENTER" />
+         </center>
+         <top>
+            <MenuBar BorderPane.alignment="CENTER">
+              <menus>
+                <Menu mnemonicParsing="false" text="Filter">
+                  <items>
+                    <MenuItem mnemonicParsing="false" onAction="#onFilterLogLevel" text="Filter by Log Level" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#onRemoveAllFilters" text="Remove all Filters" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#onListFilters" text="List filters" />
+                  </items>
+                </Menu>
+                  <Menu mnemonicParsing="false" text="Operations">
+                    <items>
+                      <MenuItem mnemonicParsing="false" onAction="#onCopyAll" text="Copy all" />
+                    </items>
+                  </Menu>
+              </menus>
+            </MenuBar>
+         </top>
+      </BorderPane>
+   </center>
+   <top>
+      <Label id="heading" alignment="CENTER" maxWidth="10000.0" text="Log" />
+   </top>
+</BorderPane>

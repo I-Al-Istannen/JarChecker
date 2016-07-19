@@ -35,7 +35,7 @@ public class Main {
 	private static boolean nobar = false;
 	private static List<String> keywords = new ArrayList<>();
 
-	// intialize the static constants
+	// initialize the static constants
 	static {
 		// Obtain the data folder
 		String OS = System.getProperty("os.name").toUpperCase();
@@ -54,8 +54,7 @@ public class Main {
 
 	@SuppressWarnings("javadoc")
 	public static void main(String[] args) throws ZipException, IOException {
-		
-		
+
 		keywords.add("--debug");
 		keywords.add("--nobar");
 		keywords.add("createimports");
@@ -100,12 +99,13 @@ public class Main {
 			mw.setVisible(true);
 			Main.mainWindow = mw;
 		}
-		
-		if(!FERNFLOWER.exists()) {
+
+		if (!FERNFLOWER.exists()) {
 			Logger.print("Downloading fernflower!");
 			final Path target = getFernflowerFile().toPath();
 			try {
-				final InputStream fromInternet = new URI("https://dl.dropboxusercontent.com/s/b9cna8hproe2smg/fernflower.jar?dl=0").toURL().openStream();
+				final InputStream fromInternet = new URI(
+						"https://dl.dropboxusercontent.com/s/b9cna8hproe2smg/fernflower.jar?dl=0").toURL().openStream();
 				new Thread(new Runnable() {
 
 					@Override
@@ -117,15 +117,15 @@ public class Main {
 						}
 						Logger.print("Fernflower downloaded!");
 					}
-					
+
 				}, "Download").start();
-				
+
 			} catch (URISyntaxException | ConnectException e) {
 				Logger.error(e);
 				Logger.error("Failed!");
-				
+
 			}
-			
+
 		}
 	}
 
@@ -149,14 +149,14 @@ public class Main {
 	public static String getVersion() {
 		return VERSION;
 	}
-	
+
 	/**
 	 * @return The working dir
 	 */
 	public static File getWorkingDirectory() {
 		return WORKING_DIR;
 	}
-	
+
 	/**
 	 * @return The location of the fernflower jar
 	 */
@@ -197,7 +197,8 @@ public class Main {
 				Logger.error("Unable to decompile jar file!!");
 				if (nogui)
 					System.exit(1);
-				else return null;
+				else
+					return null;
 			}
 		} else {
 			checker.check(new File(path));
