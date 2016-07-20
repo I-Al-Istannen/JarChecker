@@ -2,9 +2,10 @@ package com.bwfcwalshy.jarchecker.jfx_gui.utils.import_file_creator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 
-import com.bwfcwalshy.jarchecker.Logger;
 import com.bwfcwalshy.jarchecker.jfx_gui.AppMain;
+import com.bwfcwalshy.jarchecker.jfx_gui.Logger;
 import com.bwfcwalshy.jarchecker.symbol_tables.ImportFileCreationUtil;
 
 import javafx.event.ActionEvent;
@@ -75,7 +76,7 @@ public class ImportFileCreatorController {
 			try {
 				exportFile.createNewFile();
 			} catch (IOException e) {
-				Logger.error(e);
+				Logger.logException(Level.WARNING, e);
 				e.printStackTrace();
 			}
 		}

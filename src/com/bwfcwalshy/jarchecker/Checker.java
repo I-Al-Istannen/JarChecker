@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import java.util.zip.ZipInputStream;
 
 import com.bwfcwalshy.jarchecker.symbol_tables.SymbolTableTree;
 import com.bwfcwalshy.jarchecker.symbol_tables.SymbolTreeParser;
+import com.bwfcwalshy.jarchecker.jfx_gui.Logger;
 
 /**
  * Checks the jar file for malicious content
@@ -94,7 +96,7 @@ public class Checker {
 					foundClasses.put(className, clazz);
 				}
 			} catch (IOException e) {
-				Logger.error(e);
+				Logger.logException(Level.SEVERE, e);
 			}
 		} else
 			try {
@@ -129,6 +131,7 @@ public class Checker {
 							}
 
 							SymbolTreeParser parser = new SymbolTreeParser(lines.toString(), jarFile);
+							Logger.log(Level.WARNING, "Parsing: " + entry.getName());
 							parser.parse();
 							currentSymbolTree = parser.getRootNode();
 
@@ -172,7 +175,7 @@ public class Checker {
 					}
 				}
 			} catch (IOException e) {
-				Logger.error(e);
+				Logger.logException(Level.SEVERE, e);
 			} finally {
 				// Closes everything
 				try {
@@ -182,7 +185,7 @@ public class Checker {
 					if (zipFile != null)
 						zipFile.close();
 				} catch (IOException e) {
-					Logger.error(e);
+					Logger.logException(Level.SEVERE, e);
 				}
 			}
 	}
@@ -234,9 +237,9 @@ public class Checker {
 			foundChecks.put(path, toPut);
 		}
 
-		Logger.print("Found " + check.toString() + " on line " + lineNumber + " in type " + path + "!! Type="
+		Logger.log(Level.INFO, "Found " + check.toString() + " on line " + lineNumber + " in type " + path + "!! Type="
 				+ check.getType());
-		Logger.print("Line " + lineNumber + ": " + line.replace("\t", ""));
+		Logger.log(Level.INFO, "Line " + lineNumber + ": " + line.replace("\t", ""));
 	}
 
 	/**
@@ -359,14 +362,14 @@ public class Checker {
 			// not even a variable?
 			if(!findVariableMatcher.find()) {
 				// this can happen if it is a method of the same class, and invoked on a Server instance. This should be harmless.
-				Logger.debug("Found a shutdown without variable: " + line);
+				Logger.log(Level.FINER, "Found a shutdown without variable: " + line);
 				return false;
 			}
 			else {
 				String name = findVariableMatcher.group(1);
 				Optional<String> fullyQualified = currentSymbolTree.getFullyQualifiedType(currentLine, name);
 				if(fullyQualified.isPresent()) {
-					Logger.debug("Found " + name + " of type " + fullyQualified.get());
+					Logger.log(Level.FINER, "Found " + name + " of type " + fullyQualified.get());
 					
 					// is a server variable
 					if(fullyQualified.get().equals("org.bukkit.Server") || fullyQualified.get().matches("org\\.bukkit\\.craftbukkit\\.v.+\\.CraftServer")) {
@@ -377,7 +380,7 @@ public class Checker {
 					return false;
 				}
 				else {
-					Logger.warn("Found " + name + " with no type");
+					Logger.log(Level.WARNING, "Found " + name + " with no type");
 					
 					// you may want to fire once too often, but I chose to remain silent this time.
 					return false;
@@ -399,13 +402,13 @@ public class Checker {
 					String name = matcher.group(1);
 					Optional<String> type = currentSymbolTree.getFullyQualifiedType(currentLine, name);
 					if (type.isPresent()) {
-						Logger.print("Found: " + name + " " + type.get() + " " + line);
+						Logger.log(Level.FINER, "Found: " + name + " " + type.get() + " " + line);
 						return !type.get().equals("org.bukkit.command.Command");
 					} else {
-						Logger.print("No type: " + name + " " + line);
+						Logger.log(Level.FINER, "No type: " + name + " " + line);
 					}
 				} else {
-					Logger.print("No match! Please check the Parser: " + line);
+					Logger.log(Level.FINER, "No match! Please check the Parser: " + line);
 				}
 				return true;
 			}

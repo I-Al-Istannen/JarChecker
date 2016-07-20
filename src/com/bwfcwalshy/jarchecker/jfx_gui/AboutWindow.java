@@ -1,7 +1,5 @@
 package com.bwfcwalshy.jarchecker.jfx_gui;
 
-import com.bwfcwalshy.jarchecker.Main;
-
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
@@ -30,7 +28,7 @@ public class AboutWindow {
 		// not so nice way of handling links. ControlsFX may be a nice alternatice
 		// http://controlsfx.bitbucket.org/org/controlsfx/control/HyperlinkLabel.html
 		TextFlow contentText = new TextFlow();
-		contentText.getChildren().add(new Text("JarChecker version " + Main.getVersion() + "\n\n" +
+		contentText.getChildren().add(new Text("JarChecker version " + AppMain.getInstance().getVersion() + "\n\n" +
 				"JarChecker was created by"));
 		
 		contentText.getChildren().add(getLink("bwfcwalshy", "https://bukkit.org/members/bwfcwalshy.90927090/"));

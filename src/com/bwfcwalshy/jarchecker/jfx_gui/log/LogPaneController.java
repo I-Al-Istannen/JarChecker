@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import com.bwfcwalshy.jarchecker.gui.MainWindow;
 import com.bwfcwalshy.jarchecker.jfx_gui.AppMain;
 import com.bwfcwalshy.jarchecker.jfx_gui.log.create_log_filter.CreateLogFilterController;
 
@@ -21,12 +20,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.GridPane;
@@ -67,26 +66,26 @@ public class LogPaneController {
     @FXML
     private void initialize() {
 		{
-			Image copyAllIcon = new Image(MainWindow.class.getResource("/resources/copy icon.png").toString(), 20, 20,
+			Image copyAllIcon = new Image(AppMain.class.getResource("/resources/copy icon.png").toString(), 20, 20,
 					true, true);
 			copyAllMenuItem.setGraphic(new ImageView(copyAllIcon));
 		}
 
 		{
-			Image clearIcon = new Image(MainWindow.class.getResource("/resources/delete icon.png").toString(), 20, 20,
+			Image clearIcon = new Image(AppMain.class.getResource("/resources/delete icon.png").toString(), 20, 20,
 					true, true);
 			clearMenuItem.setGraphic(new ImageView(clearIcon));
 			deleteFiltersMenuItems.setGraphic(new ImageView(clearIcon));
 		}
 
 		{
-			Image listIcon = new Image(MainWindow.class.getResource("/resources/list icon.png").toString(), 20, 20,
+			Image listIcon = new Image(AppMain.class.getResource("/resources/list icon.png").toString(), 20, 20,
 					true, true);
 			listFiltersMenuItems.setGraphic(new ImageView(listIcon));
 		}
 		
 		{
-			Image addFilterIcon = new Image(MainWindow.class.getResource("/resources/filter icon.png").toString(), 20, 20,
+			Image addFilterIcon = new Image(AppMain.class.getResource("/resources/filter icon.png").toString(), 20, 20,
 					true, true);
 			addFilterMenuItem.setGraphic(new ImageView(addFilterIcon));
 		}
@@ -196,7 +195,10 @@ public class LogPaneController {
     	
     	// could call updateMessages, but that would be overkill and too slow
     	if(resultingFilter.test(level)) {
-    		textArea.appendText(message + System.lineSeparator());
+    		// TODO: ugly fix. Implement a queue 
+    		Platform.runLater(() -> {
+    			textArea.appendText(message + "\n");
+    		});
     	}
     }
 
@@ -230,4 +232,5 @@ public class LogPaneController {
 
    		updateMessages();
     }
+
 }

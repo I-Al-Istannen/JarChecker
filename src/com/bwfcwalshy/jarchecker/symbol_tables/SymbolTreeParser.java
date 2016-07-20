@@ -8,8 +8,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
-import com.bwfcwalshy.jarchecker.Logger;
+import com.bwfcwalshy.jarchecker.jfx_gui.Logger;
 
 /**
  * Creates a Symbol tree
@@ -76,18 +77,26 @@ public class SymbolTreeParser {
 	 */
 	public void parse() {
 		this.currentNode = rootNode;
-
+		
 		int lineCounter = 1;
 		for (String string : source.split(System.lineSeparator())) {
-			if (string.contains("{")) {
-				SymbolTableTree parent = currentNode;
-				currentNode = new SymbolTableTree(currentNode, lineCounter);
-				parent.addChild(currentNode);
+			for (char c : string.toCharArray()) {
+				// correctly handle brackets by scanning from left to right
+				if (c == '{') {
+					SymbolTableTree parent = currentNode;
+					currentNode = new SymbolTableTree(currentNode, lineCounter);
+					parent.addChild(currentNode);
+				}
+				if (c == '}') {
+					currentNode.setLineEnd(lineCounter);
+					// this can throw an error. An error can mean two things:
+					// 1. Mismatched brackets
+					// 2. A Bracket was skipped somehow
+					// !It is important it gets thrown, as it indicates a critical failure of this method!
+					currentNode = currentNode.getParent().get();
+				}
 			}
-			if (string.contains("}")) {
-				currentNode.setLineEnd(lineCounter);
-				currentNode = currentNode.getParent().get();
-			}
+
 
 			// skip comments and import statements
 			if (string.trim().startsWith("//") || string.startsWith("import") || string.startsWith("package")
@@ -114,6 +123,12 @@ public class SymbolTreeParser {
 						varName = varName.substring(0, varName.indexOf(" "));
 					}
 
+					// TODO: Check if this statement is universally true!
+					// "Not a variable, but actually a constructor or a cast"
+					if(varName.startsWith("(") || varName.startsWith(")")) {
+						continue;
+					}
+					
 					for (String s : nameForbiddenSequences) {
 						varName = varName.replace(s, "");
 					}
@@ -121,7 +136,7 @@ public class SymbolTreeParser {
 						currentPos += word.length();
 						continue;
 					}
-					Logger.debug("Imported class found: " + word + " <" + varName + "> (" + importMap.get(word) + ") "
+					Logger.log(Level.FINER, "Imported class found: " + word + " <" + varName + "> (" + importMap.get(word) + ") "
 							+ string);
 					currentNode.getTable().setType(varName, importMap.get(word));
 				}
@@ -133,13 +148,14 @@ public class SymbolTreeParser {
 
 		rootNode.setLineEnd(lineCounter);
 
-		Logger.debug("");
+		Logger.log(Level.FINER, "");
 		for (SymbolTableTree symbolTableTree : rootNode.getChildrenRecursive()) {
-			Logger.debug(symbolTableTree.getId() + " (" + symbolTableTree.getParent().get().getId() + ") <"
+			Logger.log(Level.FINER, symbolTableTree.getId() + " (" + symbolTableTree.getParent().get().getId() + ") <"
 					+ symbolTableTree.getLineStart() + " - " + symbolTableTree.getLineEnd() + "> "
 					+ symbolTableTree.getTable());
 		}
 	}
+
 
 	/**
 	 * Parses the import section at the beginning of a java file.

@@ -1,5 +1,13 @@
 package com.bwfcwalshy.jarchecker.jfx_gui;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.logging.Level;
+
+import com.bwfcwalshy.jarchecker.Checker;
+import com.bwfcwalshy.jarchecker.JarDecompiler;
+import com.bwfcwalshy.jarchecker.Settings;
 import com.bwfcwalshy.jarchecker.jfx_gui.log.LogPaneController;
 
 import javafx.application.Application;
@@ -13,11 +21,15 @@ import javafx.stage.Stage;
  */
 public class AppMain extends Application {
 
+	private final String VERSION = "v0.8.5";
+	
 	// too lazy to pass it through constructors.
 	private static AppMain instance;
 	
 	private Stage primaryStage;
 	
+	private Settings settings;
+		
 	private MainWindowController mainWindowController;
 	
 	/**
@@ -25,10 +37,53 @@ public class AppMain extends Application {
 	 */
 	public AppMain() {
 		instance = this;
+		settings = new Settings(false, Level.FINEST);
 	}
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		if(getParameters().getNamed().containsKey("logLevel")) {
+			String level = getParameters().getNamed().get("logLevel");
+			try {
+				settings.setMinLogLevel(Level.parse(level));
+			} catch(IllegalArgumentException e) {
+				System.out.println("Illegal named param: " + level + " for key 'logLevel'!");
+			}
+		}
+		if(getParameters().getNamed().containsKey("jarFile")) {
+			settings.setNoGui(true);
+			String filePath = getParameters().getNamed().get("jarFile");
+			File jarFile = new File(filePath);
+			if(!jarFile.exists()) {
+				System.out.println("File '" + filePath + "' doesn't exist.");
+				System.exit(-1);
+			}
+			
+			Optional<Path> decompiledPath = JarDecompiler.decompile(jarFile.toPath(), AppMain.getInstance().getSettings());
+			if(!decompiledPath.isPresent()) {
+				System.out.println("Error while decompiling.");
+				System.exit(-1);
+			}
+			jarFile = decompiledPath.get().toFile();
+			
+			// TODO: Externalize this.
+			System.out.println("Checking: " + jarFile.getName() + " " + jarFile.getAbsolutePath());
+			Checker checker = new Checker();
+			checker.check(jarFile);
+			Logger.log(Level.INFO, "-----------------------------------------------------");
+			Logger.log(Level.INFO, "File name: " + jarFile.getName());
+			Logger.log(Level.INFO, "");
+			Logger.log(Level.INFO, "File checked with JarChecker " + getVersion() + " by bwfcwalshy");
+			Logger.log(Level.INFO, "");
+			Logger.log(Level.INFO, "Found: " + (checker.getFound().isEmpty() ? "Nothing!" : "\n" + checker.getFound()));
+			Logger.log(Level.INFO, "Plugin is " + checker.getWarningLevel() + "!");
+			Logger.log(Level.INFO, "");
+			Logger.log(Level.INFO, 
+					"If you would like any support on what JarChecker is or maybe why your plugin was flagged join the IRC channel #jarchecker on irc.esper.net!");
+			
+			System.exit(0);
+		}
+		System.out.println("Minimum Log level set to: " + settings.getMinLogLevel() + " (" + settings.getMinLogLevel().intValue() + ")");
 		this.primaryStage = primaryStage;
 		
 		FXMLLoader loader = new FXMLLoader(AppMain.class.getResource("MainWindow.fxml"));
@@ -60,6 +115,20 @@ public class AppMain extends Application {
 	 */
 	public MainWindowController getMainWindowController() {
 		return mainWindowController;
+	}
+	
+	/**
+	 * @return The {@link Settings}
+	 */
+	public Settings getSettings() {
+		return settings;
+	}
+	
+	/**
+	 * @return The version.
+	 */
+	public String getVersion() {
+		return VERSION;
 	}
 	
 	/**

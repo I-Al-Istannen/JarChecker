@@ -16,11 +16,12 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
-import com.bwfcwalshy.jarchecker.Logger;
+import com.bwfcwalshy.jarchecker.jfx_gui.Logger;
 
 /**
  * The default imports
@@ -62,7 +63,7 @@ public enum DefaultImports {
 			}
 			return map;
 		} catch (IOException e) {
-			Logger.error(e);
+			Logger.logException(Level.WARNING, e);
 		}
 		// better crash right! xD Silently is too boring
 		return null;
@@ -131,7 +132,7 @@ public enum DefaultImports {
 				}
 			}
 		} catch (IOException e) {
-			Logger.error(e);
+			Logger.logException(Level.WARNING, e);
 		}
 
 		return toReturn;
