@@ -20,11 +20,11 @@
               <menus>
                 <Menu mnemonicParsing="false" text="Filter">
                   <items>
-                    <MenuItem mnemonicParsing="false" onAction="#onFilterLogLevel" text="Filter by Log Level" />
+                    <MenuItem fx:id="addFilterMenuItem" mnemonicParsing="false" onAction="#onFilterLogLevel" text="Filter by Log Level" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" onAction="#onRemoveAllFilters" text="Remove all Filters" />
+                        <MenuItem fx:id="deleteFiltersMenuItems" mnemonicParsing="false" onAction="#onRemoveAllFilters" text="Remove all Filters" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" onAction="#onListFilters" text="List filters" />
+                        <MenuItem fx:id="listFiltersMenuItems" mnemonicParsing="false" onAction="#onListFilters" text="List filters" />
                   </items>
                 </Menu>
                   <Menu mnemonicParsing="false" text="Operations">

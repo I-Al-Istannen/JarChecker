@@ -47,6 +47,15 @@ public class LogPaneController {
     private TextArea textArea;
     
     @FXML
+    private MenuItem addFilterMenuItem;
+    
+    @FXML
+    private MenuItem listFiltersMenuItems;
+
+    @FXML
+    private MenuItem deleteFiltersMenuItems;
+    
+    @FXML
     private MenuItem clearMenuItem;
     
     @FXML
@@ -64,9 +73,22 @@ public class LogPaneController {
 		}
 
 		{
-			Image copyAllIcon = new Image(MainWindow.class.getResource("/resources/delete icon.png").toString(), 20, 20,
+			Image clearIcon = new Image(MainWindow.class.getResource("/resources/delete icon.png").toString(), 20, 20,
 					true, true);
-			clearMenuItem.setGraphic(new ImageView(copyAllIcon));
+			clearMenuItem.setGraphic(new ImageView(clearIcon));
+			deleteFiltersMenuItems.setGraphic(new ImageView(clearIcon));
+		}
+
+		{
+			Image listIcon = new Image(MainWindow.class.getResource("/resources/list icon.png").toString(), 20, 20,
+					true, true);
+			listFiltersMenuItems.setGraphic(new ImageView(listIcon));
+		}
+		
+		{
+			Image addFilterIcon = new Image(MainWindow.class.getResource("/resources/filter icon.png").toString(), 20, 20,
+					true, true);
+			addFilterMenuItem.setGraphic(new ImageView(addFilterIcon));
 		}
     }
     
