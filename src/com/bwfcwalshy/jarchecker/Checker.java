@@ -131,7 +131,6 @@ public class Checker {
 							}
 
 							SymbolTreeParser parser = new SymbolTreeParser(lines.toString(), jarFile);
-							Logger.log(Level.WARNING, "Parsing: " + entry.getName());
 							parser.parse();
 							currentSymbolTree = parser.getRootNode();
 
