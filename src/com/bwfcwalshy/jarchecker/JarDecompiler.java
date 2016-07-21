@@ -87,6 +87,8 @@ public class JarDecompiler {
 			// Redirects stderr into stdout for ease of use
 			builder.redirectErrorStream(true);
 			
+			Logger.log(Level.FINER, "Started decompilation of " + file.getName(file.getNameCount() - 1));
+			
 			Process decompilerProcess = builder.start();
 			
 			try(InputStreamReader inStreamReader = new InputStreamReader(decompilerProcess.getInputStream());
