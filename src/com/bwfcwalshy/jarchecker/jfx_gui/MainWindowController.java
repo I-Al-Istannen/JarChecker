@@ -7,9 +7,11 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
-import com.bwfcwalshy.jarchecker.Main;
 import com.bwfcwalshy.jarchecker.Checker;
 import com.bwfcwalshy.jarchecker.JarDecompiler;
+import com.bwfcwalshy.jarchecker.Main;
+import com.bwfcwalshy.jarchecker.jfx_gui.log.LogFilter;
+import com.bwfcwalshy.jarchecker.jfx_gui.log.LogFilter.FilterType;
 import com.bwfcwalshy.jarchecker.jfx_gui.log.LogPaneController;
 import com.bwfcwalshy.jarchecker.jfx_gui.utils.import_file_creator.ImportFileCreatorController;
 
@@ -18,11 +20,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -76,6 +74,7 @@ public class MainWindowController {
 				FXMLLoader loader = new FXMLLoader(LogPaneController.class.getResource("LogPane.fxml"));
 				BorderPane pane = loader.load();
 				logPane = loader.getController();
+				logPane.addFilter(new LogFilter(FilterType.AND, (level) -> level != Level.FINER, "Debug remover"));
 				borderPane.setCenter(pane);
 			} catch (IOException e) {
 				e.printStackTrace();

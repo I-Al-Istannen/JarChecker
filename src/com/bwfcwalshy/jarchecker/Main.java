@@ -78,7 +78,7 @@ public class Main extends Application {
 			Logger.log(Level.INFO, "Plugin is " + checker.getWarningLevel() + "!");
 			Logger.log(Level.INFO, "");
 			Logger.log(Level.INFO, 
-					"If you would like any support on what JarChecker is or maybe why your plugin was flagged join the IRC channel #jarchecker on irc.esper.net!");
+					"If you would like any support on what JarChecker is or maybe why your plugin was flagged join the IRC channel #JarChecker on irc.esper.net!");
 			
 			System.exit(0);
 		}
