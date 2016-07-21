@@ -156,7 +156,6 @@ public class SymbolTreeParser {
 		}
 	}
 
-
 	/**
 	 * Parses the import section at the beginning of a java file.
 	 */

@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
 
+import com.bwfcwalshy.jarchecker.Main;
+
 /**
  * Logs messages
  */
@@ -15,10 +17,10 @@ public class Logger {
 	 */
 	public static void log(Level level, String message) {
 		message = "[" + level.getName() + "] " + message;
-		if(!AppMain.getInstance().getSettings().isNoGui()) {
-			AppMain.getInstance().getLogPane().addMessage(level, message);
+		if(!Main.getInstance().getSettings().isNoGui()) {
+			Main.getInstance().getLogPane().addMessage(level, message);
 		}
-		if(level.intValue() >= AppMain.getInstance().getSettings().getMinLogLevel().intValue()) {
+		if(level.intValue() >= Main.getInstance().getSettings().getMinLogLevel().intValue()) {
 			System.out.println(message);
 		}
 	}

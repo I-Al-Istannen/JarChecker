@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 
-import com.bwfcwalshy.jarchecker.jfx_gui.AppMain;
+import com.bwfcwalshy.jarchecker.Main;
 import com.bwfcwalshy.jarchecker.jfx_gui.Logger;
 import com.bwfcwalshy.jarchecker.symbol_tables.ImportFileCreationUtil;
 
@@ -46,7 +46,7 @@ public class ImportFileCreatorController {
 		chooser.setSelectedExtensionFilter(chooser.getExtensionFilters().get(0));
 
 		chooser.setTitle("Choose a library");
-		File file = chooser.showOpenDialog(AppMain.getInstance().getPrimaryStage());
+		File file = chooser.showOpenDialog(Main.getInstance().getPrimaryStage());
 
 		if (file == null) {
 			return;
@@ -64,7 +64,7 @@ public class ImportFileCreatorController {
 
 		chooser.setTitle("Choose a file to save to");
 
-		File file = chooser.showSaveDialog(AppMain.getInstance().getPrimaryStage());
+		File file = chooser.showSaveDialog(Main.getInstance().getPrimaryStage());
 
 		if (file == null) {
 			return;

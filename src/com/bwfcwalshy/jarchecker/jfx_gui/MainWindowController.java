@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
+import com.bwfcwalshy.jarchecker.Main;
 import com.bwfcwalshy.jarchecker.Checker;
 import com.bwfcwalshy.jarchecker.JarDecompiler;
 import com.bwfcwalshy.jarchecker.jfx_gui.log.LogPaneController;
@@ -38,8 +39,6 @@ public class MainWindowController {
 
 	private LogPaneController logPane;
 	
-	private ProgressIndicator progressIndicator;
-	
     @FXML
     private BorderPane borderPane;
 	
@@ -55,19 +54,19 @@ public class MainWindowController {
 	@FXML
 	private void initialize() {
 		{
-			Image exitIcon = new Image(AppMain.class.getResource("/resources/exit icon.png").toString(), 20, 20,
+			Image exitIcon = new Image(Main.class.getResource("/resources/exit icon.png").toString(), 20, 20,
 					true, true);
 			exitMenuItem.setGraphic(new ImageView(exitIcon));
 		}
 
 		{
-			Image scanIcon = new Image(AppMain.class.getResource("/resources/scan icon 2.png").toString(), 20, 20,
+			Image scanIcon = new Image(Main.class.getResource("/resources/scan icon 2.png").toString(), 20, 20,
 					true, true);
 			checkFileMenuItem.setGraphic(new ImageView(scanIcon));
 		}
 
 		{
-			Image aboutIcon = new Image(AppMain.class.getResource("/resources/help icon color.png").toString(), 20, 20,
+			Image aboutIcon = new Image(Main.class.getResource("/resources/help icon color.png").toString(), 20, 20,
 					true, true);
 			aboutMenuItem.setGraphic(new ImageView(aboutIcon));
 		}
@@ -86,7 +85,7 @@ public class MainWindowController {
 
 	@FXML
 	void onAbout(ActionEvent event) {
-		AboutWindow.show(AppMain.getInstance().getPrimaryStage());
+		AboutWindow.show(Main.getInstance().getPrimaryStage());
 	}
 
 	@FXML
@@ -94,37 +93,20 @@ public class MainWindowController {
 		FileChooser chooser = new FileChooser();
 		chooser.getExtensionFilters().add(new ExtensionFilter("Jar-Files", "*.jar"));
 		chooser.setSelectedExtensionFilter(chooser.getExtensionFilters().get(0));
-		File resultFile = chooser.showOpenDialog(AppMain.getInstance().getPrimaryStage());
+		File resultFile = chooser.showOpenDialog(Main.getInstance().getPrimaryStage());
 		
 		if(resultFile == null) {
+			Logger.log(Level.INFO, "Scan cancelled!");
 			return;
 		}
 		
-		Alert alert = new Alert(AlertType.NONE);
-		alert.getButtonTypes().add(ButtonType.CLOSE);
-		alert.setHeaderText("Decompiling");
-		progressIndicator = new ProgressIndicator();
-		progressIndicator.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-		progressIndicator.setPrefSize(100, 100);
-		alert.getDialogPane().setContent(progressIndicator);
-		
 		AtomicBoolean decompiled = new AtomicBoolean(false);
-		alert.setOnCloseRequest(closeEvent -> {
-			if(!decompiled.get()) {
-				closeEvent.consume();
-			}
-		});
-		alert.show();
 		
 		new Thread(() -> {
-			Optional<Path> decompiledPath = JarDecompiler.decompile(resultFile.toPath(), AppMain.getInstance().getSettings());
+			Optional<Path> decompiledPath = JarDecompiler.decompile(resultFile.toPath(), Main.getInstance().getSettings());
 			decompiled.set(true);
 			
-			Platform.runLater(() -> {
-				alert.hide();
-			});
-			progressIndicator = null;
-			System.out.println("Started checking!");
+			Logger.log(Level.INFO, "Started checking!");
 			if(decompiledPath.isPresent()) {
 				startCheck(decompiledPath.get().toFile());
 			}
@@ -138,7 +120,7 @@ public class MainWindowController {
 		Logger.log(Level.INFO, "-----------------------------------------------------");
 		Logger.log(Level.INFO, "File name: " + jarFile.getName());
 		Logger.log(Level.INFO, "");
-		Logger.log(Level.INFO, "File checked with JarChecker " + AppMain.getInstance().getVersion() + " by bwfcwalshy");
+		Logger.log(Level.INFO, "File checked with JarChecker " + Main.getInstance().getVersion() + " by bwfcwalshy");
 		Logger.log(Level.INFO, "");
 		Logger.log(Level.INFO, "Found: " + (checker.getFound().isEmpty() ? "Nothing!" : "\n" + checker.getFound()));
 		Logger.log(Level.INFO, "Plugin is " + checker.getWarningLevel() + "!");
@@ -151,13 +133,11 @@ public class MainWindowController {
 	 * @param progress The progress, negative for indefinite, between 0 and 1 for displaying
 	 */
 	public void setProgress(double progress) {
-		if(this.progressIndicator != null) {
 			if(!Platform.isFxApplicationThread()) {
 				Platform.runLater(() -> setProgress(progress));
 				return;
 			}
-			this.progressIndicator.setProgress(progress);
-		}
+			this.logPane.getProgressBar().setProgress(progress);
 	}
 	
 	@FXML
@@ -175,7 +155,7 @@ public class MainWindowController {
 			
 			importer.setScene(new Scene(pane));
 			importer.initModality(Modality.APPLICATION_MODAL);
-			importer.initOwner(AppMain.getInstance().getPrimaryStage());
+			importer.initOwner(Main.getInstance().getPrimaryStage());
 			
 			ImportFileCreatorController controller = loader.getController();
 			controller.setThisStage(importer);

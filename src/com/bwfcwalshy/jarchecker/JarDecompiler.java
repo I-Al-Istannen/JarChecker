@@ -20,7 +20,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import com.bwfcwalshy.jarchecker.jfx_gui.AppMain;
 import com.bwfcwalshy.jarchecker.jfx_gui.Logger;
 
 /**
@@ -44,6 +43,7 @@ public class JarDecompiler {
 		if (!settings.existsFernflower()) {
 			// well, the download failed. You have a problem.
 			if(downloadFernflower(settings) == DecompilerDownloadResult.DOWNLOAD_FAILED) {
+				Logger.log(Level.SEVERE, "Coulf not download fernflower!");
 				return Optional.empty();
 			}
 		}
@@ -116,18 +116,23 @@ public class JarDecompiler {
     						return Optional.empty();
     					}
     					double percentage = (double) readLines / lineCount;
-    					if(!AppMain.getInstance().getSettings().isNoGui()) {
-    						AppMain.getInstance().getMainWindowController().setProgress(percentage);
+    					if(!Main.getInstance().getSettings().isNoGui()) {
+    						Main.getInstance().getMainWindowController().setProgress(percentage);
     					}
     				}
     			}
+				if(!Main.getInstance().getSettings().isNoGui()) {
+					Main.getInstance().getMainWindowController().setProgress(0);
+				}
 				Logger.log(Level.INFO, "Decompiled " + targetFile.getName(targetFile.getNameCount() - 1));
 				return Optional.of(target.resolve(targetFile.getName(targetFile.getNameCount() - 1)));
 			}
 		} catch (IOException e) {
 			Logger.logException(Level.SEVERE, e);
 		}
-		
+		if(!Main.getInstance().getSettings().isNoGui()) {
+			Main.getInstance().getMainWindowController().setProgress(0);
+		}
 		return Optional.empty();
 	}
 

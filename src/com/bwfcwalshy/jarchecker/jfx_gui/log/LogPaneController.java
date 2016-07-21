@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import com.bwfcwalshy.jarchecker.jfx_gui.AppMain;
+import com.bwfcwalshy.jarchecker.Main;
 import com.bwfcwalshy.jarchecker.jfx_gui.log.create_log_filter.CreateLogFilterController;
 
 import javafx.application.Platform;
@@ -23,6 +23,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -46,6 +47,9 @@ public class LogPaneController {
     private TextArea textArea;
     
     @FXML
+    private ProgressBar progressBar;
+    
+    @FXML
     private MenuItem addFilterMenuItem;
     
     @FXML
@@ -66,26 +70,26 @@ public class LogPaneController {
     @FXML
     private void initialize() {
 		{
-			Image copyAllIcon = new Image(AppMain.class.getResource("/resources/copy icon.png").toString(), 20, 20,
+			Image copyAllIcon = new Image(Main.class.getResource("/resources/copy icon.png").toString(), 20, 20,
 					true, true);
 			copyAllMenuItem.setGraphic(new ImageView(copyAllIcon));
 		}
 
 		{
-			Image clearIcon = new Image(AppMain.class.getResource("/resources/delete icon.png").toString(), 20, 20,
+			Image clearIcon = new Image(Main.class.getResource("/resources/delete icon.png").toString(), 20, 20,
 					true, true);
 			clearMenuItem.setGraphic(new ImageView(clearIcon));
 			deleteFiltersMenuItems.setGraphic(new ImageView(clearIcon));
 		}
 
 		{
-			Image listIcon = new Image(AppMain.class.getResource("/resources/list icon.png").toString(), 20, 20,
+			Image listIcon = new Image(Main.class.getResource("/resources/list icon.png").toString(), 20, 20,
 					true, true);
 			listFiltersMenuItems.setGraphic(new ImageView(listIcon));
 		}
 		
 		{
-			Image addFilterIcon = new Image(AppMain.class.getResource("/resources/filter icon.png").toString(), 20, 20,
+			Image addFilterIcon = new Image(Main.class.getResource("/resources/filter icon.png").toString(), 20, 20,
 					true, true);
 			addFilterMenuItem.setGraphic(new ImageView(addFilterIcon));
 		}
@@ -117,7 +121,7 @@ public class LogPaneController {
 			CreateLogFilterController controller = loader.getController();
 			
 			Stage stage = new Stage();
-			stage.initOwner(AppMain.getInstance().getPrimaryStage());
+			stage.initOwner(Main.getInstance().getPrimaryStage());
 			stage.initModality(Modality.APPLICATION_MODAL);
 			
 			stage.setScene(new Scene(pane));
@@ -137,7 +141,7 @@ public class LogPaneController {
     @FXML
     void onListFilters(ActionEvent event) {
     	Alert alert = new Alert(AlertType.INFORMATION);
-    	alert.initOwner(AppMain.getInstance().getPrimaryStage());
+    	alert.initOwner(Main.getInstance().getPrimaryStage());
     	alert.setHeaderText("Filters:");
     	
     	if(!filters.isEmpty()) {    	
@@ -231,6 +235,14 @@ public class LogPaneController {
    		}
 
    		updateMessages();
+    }
+    
+    /**
+     * Gets the decompilation progress bar
+     * @return The progress bar
+     */
+    public ProgressBar getProgressBar() {
+    	return progressBar;
     }
 
 }
