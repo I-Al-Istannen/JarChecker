@@ -1,38 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.net.* ?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
-<?import java.net.* ?>
 
-<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bwfcwalshy.jarchecker.jfx_gui.MainWindowController">
-   <stylesheets>
-   		<URL value="@rootCss.css" ></URL>
-   </stylesheets>
-   <top>
-      <MenuBar BorderPane.alignment="CENTER">
-        <menus>
-          <Menu mnemonicParsing="false" text="File">
-            <items>
-                  <MenuItem fx:id="checkFileMenuItem" mnemonicParsing="false" onAction="#onCheckFile" text="Check file" />
-                  <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" onAction="#onExit" text="Exit" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Utils">
-            <items>
-              <MenuItem mnemonicParsing="false" onAction="#onImportFileCreator" text="Import file creator" />
-            </items>
-          </Menu>
-            <Menu mnemonicParsing="false" text="Options" />
-          <Menu mnemonicParsing="false" text="Help">
-            <items>
-              <MenuItem fx:id="aboutMenuItem" mnemonicParsing="false" onAction="#onAbout" text="About" />
-            </items>
-          </Menu>
-        </menus>
-      </MenuBar>
-   </top>
+<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="com.bwfcwalshy.jarchecker.jfx_gui.MainWindowController">
+  <bottom>
+    <BorderPane prefHeight="24.0" prefWidth="700.0">
+      <center>
+        <Button fx:id="showClasses" mnemonicParsing="false" onAction="#onShowClasses" text="Show suspicius classes" />
+      </center>
+    </BorderPane>
+  </bottom>
+  <stylesheets>
+    <URL value="@rootCss.css" />
+  </stylesheets>
+  <top>
+    <MenuBar BorderPane.alignment="CENTER">
+      <menus>
+        <Menu mnemonicParsing="false" text="File">
+          <items>
+            <MenuItem mnemonicParsing="false" onAction="#onCheckFile" text="Check file" fx:id="checkFileMenuItem" />
+            <SeparatorMenuItem mnemonicParsing="false" />
+            <MenuItem mnemonicParsing="false" onAction="#onExit" text="Exit" fx:id="exitMenuItem" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Utils">
+          <items>
+            <MenuItem mnemonicParsing="false" onAction="#onImportFileCreator" text="Import file creator" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Options" />
+        <Menu mnemonicParsing="false" text="Help">
+          <items>
+            <MenuItem mnemonicParsing="false" onAction="#onAbout" text="About" fx:id="aboutMenuItem" />
+          </items>
+        </Menu>
+      </menus>
+    </MenuBar>
+  </top>
 </BorderPane>

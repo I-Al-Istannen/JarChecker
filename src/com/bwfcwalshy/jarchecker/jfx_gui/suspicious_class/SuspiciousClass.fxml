@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="com.bwfcwalshy.jarchecker.jfx_gui.suspicious_class.SuspiciousClassController">
+  <center>
+    <TextArea fx:id="classArea" editable="false" prefHeight="403.0" prefWidth="354.0" text="If you see this, something went wrong." wrapText="false" />
+  </center>
+</BorderPane>

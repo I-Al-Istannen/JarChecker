@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import java.net.*?>
 <?import java.net.URL?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -10,11 +13,12 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bwfcwalshy.jarchecker.jfx_gui.log.LogPaneController">
+<BorderPane prefHeight="450.0000999999975" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="com.bwfcwalshy.jarchecker.jfx_gui.log.LogPaneController">
   <bottom>
-    <BorderPane prefHeight="14.0" prefWidth="600.0">
+    <BorderPane prefHeight="24.0" prefWidth="600.0">
       <center>
         <ProgressBar fx:id="progressBar" prefWidth="200.0" progress="0.0" />
       </center>
@@ -22,39 +26,39 @@
   </bottom>
   <center>
     <BorderPane id="borderPaneLog" maxHeight="10000.0" maxWidth="10000.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
+      <center>
+        <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="CENTER">
+          <content>
+            <ListView id="log" fx:id="logList" prefHeight="390.0" prefWidth="598.0" />
+          </content>
+        </ScrollPane>
+      </center>
       <top>
         <MenuBar BorderPane.alignment="CENTER">
           <menus>
             <Menu mnemonicParsing="false" text="Filter">
               <items>
-                <MenuItem fx:id="addFilterMenuItem" mnemonicParsing="false" onAction="#onFilterLogLevel" text="Filter by Log Level" />
+                <MenuItem mnemonicParsing="false" onAction="#onFilterLogLevel" text="Filter by Log Level" fx:id="addFilterMenuItem" />
                 <SeparatorMenuItem mnemonicParsing="false" />
-                <MenuItem fx:id="deleteFiltersMenuItems" mnemonicParsing="false" onAction="#onRemoveAllFilters" text="Remove all Filters" />
+                <MenuItem mnemonicParsing="false" onAction="#onRemoveAllFilters" text="Remove all Filters" fx:id="deleteFiltersMenuItems" />
                 <SeparatorMenuItem mnemonicParsing="false" />
-                <MenuItem fx:id="listFiltersMenuItems" mnemonicParsing="false" onAction="#onListFilters" text="List filters" />
+                <MenuItem mnemonicParsing="false" onAction="#onListFilters" text="List filters" fx:id="listFiltersMenuItems" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Operations">
               <items>
-                <MenuItem fx:id="copyAllMenuItem" mnemonicParsing="false" onAction="#onCopyAll" text="Copy all" />
-                <MenuItem fx:id="clearMenuItem" mnemonicParsing="false" onAction="#onClear" text="Clear" />
+                <MenuItem mnemonicParsing="false" onAction="#onCopyAll" text="Copy all" fx:id="copyAllMenuItem" />
+                <MenuItem mnemonicParsing="false" onAction="#onClear" text="Clear" fx:id="clearMenuItem" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Log Options">
               <items>
-                <CheckMenuItem fx:id="wrapTextCheckMenuItem" mnemonicParsing="false" onAction="#onWrapText" text="Wrap text" />
+                <CheckMenuItem mnemonicParsing="false" onAction="#onWrapText" text="Wrap text" fx:id="wrapTextCheckMenuItem" />
               </items>
             </Menu>
           </menus>
         </MenuBar>
       </top>
-         <center>
-            <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="CENTER">
-               <content>
-                  <ListView id="log" fx:id="logList" prefHeight="200.0" prefWidth="200.0" />
-               </content>
-            </ScrollPane>
-         </center>
     </BorderPane>
   </center>
   <stylesheets>

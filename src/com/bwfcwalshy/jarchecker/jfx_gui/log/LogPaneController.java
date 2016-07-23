@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -74,7 +75,7 @@ public class LogPaneController {
 
 	@FXML
 	private CheckMenuItem wrapTextCheckMenuItem;
-
+	
 	@FXML
 	private void initialize() {
 		{
@@ -101,6 +102,11 @@ public class LogPaneController {
 					true, true);
 			addFilterMenuItem.setGraphic(new ImageView(addFilterIcon));
 		}
+		{
+			wrapTextCheckMenuItem.setSelected(true);
+			installWrappingCellFactory(true);
+		}
+		// TODO Add autoscroll to log
 	}
 
 	@FXML

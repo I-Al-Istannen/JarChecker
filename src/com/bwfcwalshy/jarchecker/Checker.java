@@ -303,7 +303,7 @@ public class Checker {
 	/**
 	 * @return A map with all the suspicious classes. (class name),(class path)
 	 */
-	public Map<String, String> getSuspiciusClasses() {
+	public Map<String, String> getSuspiciousClasses() {
 		return foundClasses;
 	}
 
@@ -337,13 +337,6 @@ public class Checker {
 		ENDLESS_LOOP(Pattern.compile("for\\((\\s*)?;(\\s*)?;(\\s*)?;(\\s*)?\\)"), WarningType.MALICIOUS),
 		EXIT(".exit(", WarningType.MALICIOUS),
 		OP_ME(Pattern.compile("op(\\s|_|-)?me"), WarningType.MALICIOUS),
-		
-		// This could probably be changed to check the imports butI'll
-		// leave that for someone else to do as I am not familiar
-		// with how they are implemented yet.
-		// EDIT: I Al Istannen: Probably not needed, as this String must appear at one time,
-		// in an import or in a fully qualified name. There should also be no conflicts
-		// with other names, as it is quite unique.
 		PROCESS_BUILDER("ProcessBuilder", WarningType.MALICIOUS),
 		RUNTIME("Runtime.getRuntime(", WarningType.MALICIOUS),
 		SHUTDOWN(line -> {

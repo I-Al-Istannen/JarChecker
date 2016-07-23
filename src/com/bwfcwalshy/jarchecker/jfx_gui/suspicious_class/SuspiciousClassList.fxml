@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+
+<BorderPane fx:id="borderPane" prefHeight="354.0" prefWidth="177.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="com.bwfcwalshy.jarchecker.jfx_gui.suspicious_class.SuspiciousClassListController">
+  <left>
+    <ListView fx:id="classList" onMouseClicked="#onListClick" prefHeight="200.0" prefWidth="200.0" />
+  </left>
+</BorderPane>
